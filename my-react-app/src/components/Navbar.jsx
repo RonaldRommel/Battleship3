@@ -1,8 +1,11 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 import "../App.css";
+import { useAuthContext } from "../context/AuthContext";
 
 const Navbar = () => {
+  const { user, isAuthenticated, handleLogout } = useAuthContext();
+
   return (
     <nav className="navbar sticky-top navbar-expand-lg navbar-custom">
       <div className="container-fluid">
@@ -37,6 +40,42 @@ const Navbar = () => {
                 Scores
               </NavLink>
             </li>
+            {!isAuthenticated && (
+              <>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/login">
+                    Login
+                  </NavLink>
+                </li>
+                <li className="nav-item">
+                  <NavLink className="nav-link" to="/signup">
+                    Sign Up
+                  </NavLink>
+                </li>
+              </>
+            )}
+            {isAuthenticated && (
+              <>
+                <li className="nav-item dropdown">
+                  <a
+                    className="nav-link dropdown-toggle"
+                    href="#"
+                    role="button"
+                    data-bs-toggle="dropdown"
+                    aria-expanded="false"
+                  >
+                    {user && user.firstName}
+                  </a>
+                  <ul className="dropdown-menu">
+                    <li className="nav-item">
+                      <NavLink className="nav-link" to="/signup">
+                        <button onClick={handleLogout}>Logout</button>
+                      </NavLink>
+                    </li>
+                  </ul>
+                </li>
+              </>
+            )}
           </ul>
         </div>
       </div>

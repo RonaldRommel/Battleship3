@@ -4,6 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "homepage": "https://harikagummadi582.github.io/Battleship-project/",
+  "proxy": "http://localhost:3000",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -17,7 +18,10 @@
     "@emotion/styled": "^11.14.0",
     "@mui/icons-material": "^6.4.9",
     "@mui/material": "^6.4.9",
+    "axios": "^1.8.4",
     "bootstrap": "^5.3.3",
+    "cors": "^2.8.5",
+    "jwt-decode": "^4.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.3.0"
