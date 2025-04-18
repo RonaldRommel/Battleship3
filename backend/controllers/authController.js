@@ -37,8 +37,9 @@ const generateAccessToken = (user) => {
 };
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
   try {
+    const { email, password } = req.body;
+
     const user = await User.findOne({ email: email });
     if (!user || user.password !== password) {
       return res.status(400).json({ message: "Invalid email or password!" });

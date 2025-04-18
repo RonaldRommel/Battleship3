@@ -24,11 +24,13 @@ router.post("/newgame", verifyToken, (req, res) => {
   gameController.createGame(req, res);
 });
 
-router.post("/joingame/:gameID", verifyToken, (req, res) => {
-  console.log("here");
-  gameController.joinGame(req, res);
+router.get("/joingame/:gameID", verifyToken, (req, res) => {
+  gameController.joinActiveGame(req, res);
 });
 
+router.post("/joingame/:gameID", verifyToken, (req, res) => {
+  gameController.joinGame(req, res);
+});
 
 //DUMMY
 router.get("/open/:gameID", async (req, res) => {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import Navbar from "../components/Navbar";
@@ -11,8 +11,6 @@ function Game() {
   const { isAuthenticated } = useAuthContext();
   const {
     createGame,
-    freeplayMode,
-    normalMode,
     openGames,
     myActiveGames,
     myCompletedGames,
@@ -20,6 +18,10 @@ function Game() {
     myOpenGames,
     navigateToPage,
   } = useGameContext();
+
+  useEffect(() => {
+
+  });
   return (
     <>
       <Navbar />
