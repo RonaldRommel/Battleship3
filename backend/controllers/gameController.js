@@ -2,7 +2,6 @@ const Game = require("../models/gameModel");
 
 exports.openGames = async (req, res) => {
   const user = req.user;
-  console.log("User from token:", user);
   try {
     const games = await Game.find({
       userID: { $ne: user.id },
@@ -13,7 +12,6 @@ exports.openGames = async (req, res) => {
       games,
     });
   } catch (error) {
-    console.error("Error retrieving open games:", error);
     res.status(500).json({
       message: "Server error",
       error,
@@ -23,7 +21,6 @@ exports.openGames = async (req, res) => {
 
 exports.myOpenGames = async (req, res) => {
   const user = req.user;
-  console.log("User from token:", user);
   try {
     const games = await Game.find({ userID: user.id, status: "open" });
     res.status(200).json({
@@ -31,7 +28,6 @@ exports.myOpenGames = async (req, res) => {
       games,
     });
   } catch (error) {
-    console.error("Error retrieving open games:", error);
     res.status(500).json({
       message: "Server error",
       error,
@@ -41,15 +37,16 @@ exports.myOpenGames = async (req, res) => {
 
 exports.myActiveGames = async (req, res) => {
   const user = req.user;
-  console.log("User from token:", user);
   try {
-    const games = await Game.find({ userID: user.id, status: "active" });
+    const allGames = await Game.find({
+      status: "active",
+      $or: [{ userID: user.id }, { opponentID: user.id }],
+    });
     res.status(200).json({
       message: "Active games retrieved successfully",
-      games,
+      allGames,
     });
   } catch (error) {
-    console.error("Error retrieving open games:", error);
     res.status(500).json({
       message: "Server error",
       error,
@@ -59,7 +56,6 @@ exports.myActiveGames = async (req, res) => {
 
 exports.myCompletedGames = async (req, res) => {
   const user = req.user;
-  console.log("User from token:", user);
   try {
     const games = await Game.find({ userID: user.id, status: "completed" });
     res.status(200).json({
@@ -67,7 +63,6 @@ exports.myCompletedGames = async (req, res) => {
       games,
     });
   } catch (error) {
-    console.error("Error retrieving open games:", error);
     res.status(500).json({
       message: "Server error",
       error,
@@ -79,7 +74,6 @@ exports.otherGames = async (req, res) => {};
 
 exports.createGame = async (req, res) => {
   const user = req.user;
-  console.log("User from token:", user);
   const newGame = new Game({
     user: user.firstName + " " + user.lastName,
     userID: user.id,
@@ -91,7 +85,6 @@ exports.createGame = async (req, res) => {
       game: newGame,
     });
   } catch (error) {
-    console.error("Error creating game:", error);
     res.status(500).json({
       message: "Server error",
       error,
@@ -102,18 +95,15 @@ exports.createGame = async (req, res) => {
 exports.joinGame = async (req, res) => {
   const user = req.user;
   const gameid = req.params.gameID;
-  console.log("GameID", gameid);
   try {
     const game = await Game.findById(gameid);
-    console.log("Found game");
     if (!game) {
       return res.status(404).json({
         message: "Game not found",
       });
     } else if (game.userID.toString() === user.id) {
-      return res.status(200).json({
-        message: "Joined your game",
-        game,
+      return res.status(400).json({
+        message: "Cant join your own game",
       });
     } else if (game.opponentID === null) {
       game.opponent = user.firstName + " " + user.lastName;
@@ -127,15 +117,38 @@ exports.joinGame = async (req, res) => {
           game,
         });
       } catch (error) {
-        console.error("Error saving game:", error);
         return res.status(500).json({
           message: "Server error",
           error,
         });
       }
+    } else {
+      return res.status(400).json({
+        message: "Cant join game",
+      });
     }
   } catch (error) {
-    console.error("Error finding game:", error);
+    return res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
+};
+
+exports.joinActiveGame = async (req, res) => {
+  const gameid = req.params.gameID;
+  try {
+    const game = await Game.findById(gameid);
+    if (!game) {
+      return res.status(404).json({
+        message: "Game not found",
+      });
+    }
+    return res.status(200).json({
+      message: "Joined the active game successfully",
+      game,
+    });
+  } catch (error) {
     return res.status(500).json({
       message: "Server error",
       error,

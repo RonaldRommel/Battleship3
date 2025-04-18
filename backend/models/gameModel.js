@@ -55,6 +55,11 @@ const GameSchema = new mongoose.Schema(
       enum: ["open", "active", "completed"],
       default: "open",
     },
+    turn: {
+      type: String,
+      enum: ["user", "opponent"],
+      default: "user",
+    },
   },
   {
     timestamps: true,

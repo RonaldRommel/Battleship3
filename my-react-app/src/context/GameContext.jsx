@@ -46,21 +46,54 @@ const GameProvider = ({ children }) => {
     }
   };
 
-  const openGames = async () => {};
+  const openGames = async () => {
+    try {
+      const res = await axios.get("/api/game/open", {
+        withCredentials: true,
+      });
+      const openGames = res.data.games;
+      return openGames;
+    } catch (error) {
+      console.error("Error fetching open games:", error);
+      alert("Error fetching open games. Please try again.");
+    }
+  };
   const myOpenGames = async () => {
     try {
       const res = await axios.get("/api/game/myopen", {
         withCredentials: true,
       });
       const openGames = res.data.games;
-      console.log("Open games:", openGames);
+      return openGames;
     } catch (error) {
       console.error("Error fetching open games:", error);
       alert("Error fetching open games. Please try again.");
     }
   };
-  const myActiveGames = async () => {};
-  const myCompletedGames = async () => {};
+  const myActiveGames = async () => {
+    try {
+      const res = await axios.get("/api/game/myactive", {
+        withCredentials: true,
+      });
+      const openGames = res.data.games;
+      return openGames;
+    } catch (error) {
+      console.error("Error fetching open games:", error);
+      alert("Error fetching open games. Please try again.");
+    }
+  };
+  const myCompletedGames = async () => {
+    try {
+      const res = await axios.get("/api/game/mycompleted", {
+        withCredentials: true,
+      });
+      const openGames = res.data.games;
+      return openGames;
+    } catch (error) {
+      console.error("Error fetching open games:", error);
+      alert("Error fetching open games. Please try again.");
+    }
+  };
   const otherGames = async () => {};
 
   return (
