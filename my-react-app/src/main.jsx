@@ -14,6 +14,11 @@ import Login from "./pages/Login.jsx";
 import Signup from "./pages/Signup.jsx";
 import Multiplayer from "./pages/Multiplayer.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
+import OpenGames from "./pages/OpenGames.jsx";
+import MyOpenGames from "./pages/MyOpenGames.jsx";
+import MyActiveGames from "./pages/MyActiveGames.jsx";
+import MyCompletedGames from "./pages/MyCompletedGames.jsx";
+import OtherGames from "./pages/OtherGames.jsx";
 
 const BrowserRouter = createHashRouter([
   {
@@ -29,6 +34,11 @@ const BrowserRouter = createHashRouter([
   { path: "/login", element: <Login /> },
   { path: "/signup", element: <Signup /> },
   { path: "/game/multiplayer/:gameID", element: <Multiplayer /> },
+  { path: "/game/open-games", element: <OpenGames /> },
+  { path: "/game/my-open-games", element: <MyOpenGames /> },
+  { path: "/game/my-active-games", element: <MyActiveGames /> },
+  { path: "/game/my-completed-games", element: <MyCompletedGames /> },
+  { path: "/game/other-games", element: <OtherGames /> },
 ]);
 
 createRoot(document.getElementById("root")).render(

@@ -231,7 +231,9 @@ p {
   display: flex;
   justify-content: center;
   align-items: center;
-  height: 90vh; /* Take up 100% of the viewport height */
+  margin-bottom: 30px;
+  margin-top: 0px;
+  min-height: 90vh; /* Take up 100% of the viewport height */
   width: 90vh;
   text-align: center; /* Optional, for centering the text inside */
   background-color: #e6f7ff;
