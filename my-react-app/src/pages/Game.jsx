@@ -18,6 +18,7 @@ function Game() {
     myCompletedGames,
     otherGames,
     myOpenGames,
+    navigateToPage,
   } = useGameContext();
   return (
     <>
@@ -25,63 +26,77 @@ function Game() {
       <div className="container game-container">
         <h1>Types of Games</h1>
         <p>Choose a game type to play!</p>
-        {/* <div className="button-container">
-          <Link to="/game/freeplay">
-            <button type="button" className="btn btn-info game-btn">
-              Freeplay
-            </button>
-          </Link>
-        </div> */}
-        <div className="accordion accordion-flush" id="accordionExample">
-          <GameItem
-            header="Freeplay"
-            id="freeplay"
-            content="Freeplay mode"
-            gamefunction={freeplayMode}
-          />
-          <GameItem
-            header="Normal"
-            id="normal"
-            content="NormalMode"
-            gamefunction={normalMode}
-          />
-          <GameItem
-            header="Start Game"
-            id="startgame"
-            content="Start a new game"
-            gamefunction={createGame}
-          />
-          <GameItem
-            header="Open Games"
-            id="opengames"
-            content="Open games that you can join"
-            gamefunction={openGames}
-          />
-          <GameItem
-            header="My Open Games"
-            id="myopengames"
-            content=""
-            gamefunction={myOpenGames}
-          />
-          <GameItem
-            header="My Active Games"
-            id="myactivegames"
-            content="Active games that you are playing"
-            gamefunction={myActiveGames}
-          />
-          <GameItem
-            header="My Completed Games"
-            id="mycompletedgames"
-            content="Games that you have completed"
-            gamefunction={myCompletedGames}
-          />
-          <GameItem
-            header="Other Games"
-            id="othergames"
-            content="Other games that you have played"
-            gamefunction={otherGames}
-          />
-        </div>
+        <ul className="list-group">
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("freeplay");
+            }}
+          >
+            Freeplay
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("normal");
+            }}
+          >
+            Normal
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("openGames");
+            }}
+            disabled={!isAuthenticated}
+            data-bs-toggle="tooltip"
+            data-bs-title="Default tooltip"
+          >
+            Open Games
+            <span class="ms-3 badge text-bg-primary rounded-pill">
+              Login required
+            </span>
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("myOpenGames");
+            }}
+          >
+            My Open Games
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("myActiveGames");
+            }}
+          >
+            My Active Games
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("myCompletedGames");
+            }}
+          >
+            My Completed Games
+          </button>
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("otherGames");
+            }}
+          >
+            Other Games
+          </button>
+        </ul>
       </div>
     </>
   );

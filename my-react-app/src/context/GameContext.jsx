@@ -7,12 +7,34 @@ const GameContext = createContext();
 const GameProvider = ({ children }) => {
   const navigate = useNavigate();
 
-  const freeplayMode = () => {
-    navigate("/game/freeplay");
+  const navigateToPage = (val) => {
+    switch (val) {
+      case "freeplay":
+        navigate("/game/freeplay");
+        break;
+      case "normal":
+        navigate("/game/normal");
+        break;
+      case "openGames":
+        navigate("/game/open-games");
+        break;
+      case "myOpenGames":
+        navigate("/game/my-open-games");
+        break;
+      case "myActiveGames":
+        navigate("/game/my-active-games");
+        break;
+      case "myCompletedGames":
+        navigate("/game/my-completed-games");
+        break;
+      case "otherGames":
+        navigate("/game/other-games");
+        break;
+      default:
+        console.log("unknownPage");
+    }
   };
-  const normalMode = () => {
-    navigate("/game/normal");
-  };
+
   const createGame = async () => {
     try {
       const newGame = await axios.post("/api/game/newgame", {
@@ -23,6 +45,7 @@ const GameProvider = ({ children }) => {
       alert("Error creating game. Please try again.");
     }
   };
+
   const openGames = async () => {};
   const myOpenGames = async () => {
     try {
@@ -43,9 +66,8 @@ const GameProvider = ({ children }) => {
   return (
     <GameContext.Provider
       value={{
+        navigateToPage,
         createGame,
-        freeplayMode,
-        normalMode,
         openGames,
         myActiveGames,
         myCompletedGames,
