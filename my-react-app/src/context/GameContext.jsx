@@ -14,20 +14,34 @@ const GameProvider = ({ children }) => {
   // Get the navigate function from react-router-dom to handle navigation between routes
   const navigate = useNavigate();
 
-  // Function to navigate to the freeplay mode of the game
-  // This mode likely allows players to practice without affecting their stats
-  const freeplayMode = () => {
-    navigate("/game/freeplay");
+  const navigateToPage = (val) => {
+    switch (val) {
+      case "freeplay":
+        navigate("/game/freeplay");
+        break;
+      case "normal":
+        navigate("/game/normal");
+        break;
+      case "openGames":
+        navigate("/game/open-games");
+        break;
+      case "myOpenGames":
+        navigate("/game/my-open-games");
+        break;
+      case "myActiveGames":
+        navigate("/game/my-active-games");
+        break;
+      case "myCompletedGames":
+        navigate("/game/my-completed-games");
+        break;
+      case "otherGames":
+        navigate("/game/other-games");
+        break;
+      default:
+        console.log("unknownPage");
+    }
   };
-  
-  // Function to navigate to the normal mode of the game
-  // This is probably the standard competitive mode
-  const normalMode = () => {
-    navigate("/game/normal");
-  };
-  
-  // Function to create a new game by making a POST request to the backend
-  // This would initialize a new game session in the database
+
   const createGame = async () => {
     try {
       // Make a POST request to create a new game
@@ -43,9 +57,6 @@ const GameProvider = ({ children }) => {
       alert("Error creating game. Please try again.");
     }
   };
-  
-  // Function stub for fetching all open games
-  // This would likely show games that are waiting for opponents
   const openGames = async () => {};
   
   // Function to fetch games created by the current user that are waiting for opponents
@@ -83,14 +94,13 @@ const GameProvider = ({ children }) => {
   return (
     <GameContext.Provider
       value={{
-        createGame,      // Function to create a new game
-        freeplayMode,    // Function to navigate to freeplay mode
-        normalMode,      // Function to navigate to normal mode
-        openGames,       // Function to fetch all open games
-        myActiveGames,   // Function to fetch user's active games
-        myCompletedGames, // Function to fetch user's completed games
-        otherGames,      // Function to fetch games created by others
-        myOpenGames,     // Function to fetch user's open games
+        navigateToPage,
+        createGame,
+        openGames,
+        myActiveGames,
+        myCompletedGames,
+        otherGames,
+        myOpenGames,
       }}
     >
       {/* Render all the child components that need access to the game context */}
