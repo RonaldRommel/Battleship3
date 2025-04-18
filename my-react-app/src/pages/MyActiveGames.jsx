@@ -1,5 +1,11 @@
 import React from "react";
+import Navbar from "../components/Navbar";
 
 export default function MyActiveGames() {
-  return <div>MyActiveGames</div>;
+  return (
+    <>
+      <Navbar />
+      <div>MyActiveGames</div>
+    </>
+  );
 }
