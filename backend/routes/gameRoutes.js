@@ -24,12 +24,16 @@ router.post("/newgame", verifyToken, (req, res) => {
   gameController.createGame(req, res);
 });
 
-router.get("/joingame/:gameID", verifyToken, (req, res) => {
+router.get("/:gameID", verifyToken, (req, res) => {
   gameController.joinActiveGame(req, res);
 });
 
 router.post("/joingame/:gameID", verifyToken, (req, res) => {
   gameController.joinGame(req, res);
+});
+
+router.post("/:gameID/move", verifyToken, (req, res) => {
+  gameController.makeMove(req, res);
 });
 
 //DUMMY
