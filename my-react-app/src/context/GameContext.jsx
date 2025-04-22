@@ -63,8 +63,7 @@ const GameProvider = ({ children }) => {
       const res = await axios.get("/api/game/myopen", {
         withCredentials: true,
       });
-      const openGames = res.data.games;
-      return openGames;
+      return res;
     } catch (error) {
       console.error("Error fetching open games:", error);
       alert("Error fetching open games. Please try again.");
@@ -75,8 +74,7 @@ const GameProvider = ({ children }) => {
       const res = await axios.get("/api/game/myactive", {
         withCredentials: true,
       });
-      const openGames = res.data.games;
-      return openGames;
+      return res;
     } catch (error) {
       console.error("Error fetching open games:", error);
       alert("Error fetching open games. Please try again.");
@@ -87,8 +85,7 @@ const GameProvider = ({ children }) => {
       const res = await axios.get("/api/game/mycompleted", {
         withCredentials: true,
       });
-      const openGames = res.data.games;
-      return openGames;
+      return res;
     } catch (error) {
       console.error("Error fetching open games:", error);
       alert("Error fetching open games. Please try again.");
@@ -97,15 +94,14 @@ const GameProvider = ({ children }) => {
   const otherGames = async () => {};
 
   const playerMove = async () => {
-    try{
-
-    }
-    catch (error) {
+    try {
+    } catch (error) {
       console.error("Error fetching open games:", error);
       alert("Error fetching open games. Please try again.");
     }
   };
 
+  const loadPage = async (gameID) => {};
 
   return (
     <GameContext.Provider
