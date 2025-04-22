@@ -96,6 +96,17 @@ const GameProvider = ({ children }) => {
   };
   const otherGames = async () => {};
 
+  const playerMove = async () => {
+    try{
+
+    }
+    catch (error) {
+      console.error("Error fetching open games:", error);
+      alert("Error fetching open games. Please try again.");
+    }
+  };
+
+
   return (
     <GameContext.Provider
       value={{

@@ -155,3 +155,52 @@ exports.joinActiveGame = async (req, res) => {
     });
   }
 };
+
+exports.makeMove = async (req, res) => {
+  const user = req.user;
+  const gameId = req.params.gameID;
+  const updatedGame = req.body.game;
+  if (!updatedGame) {
+    return res.status(400).json({
+      message: "Invalid game data",
+    });
+  }
+  if (!(updatedGame.userID === user.id || updatedGame.opponentID === user.id)) {
+    console.log(typeof updatedGame.userID);
+    console.log(typeof user.id);
+    console.log(updatedGame.userID !== user.id);
+    return res.status(403).json({
+      message: "You are not authorized to make this move",
+      values: {
+        userID: updatedGame.userID,
+        opponentID: updatedGame.opponentID,
+        user: user.id,
+      },
+    });
+  }
+  delete updatedGame._id;
+  try {
+    await Game.updateOne({ _id: gameId }, updatedGame);
+    res.status(200).json({
+      message: "Game updated successfully",
+      game: updatedGame,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
+};
+
+exports.highscores = async (req, res) => {
+  try{
+    const allGames = await Game.find({status: "completed"});
+  }
+  catch (error) {
+    return res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
+}
