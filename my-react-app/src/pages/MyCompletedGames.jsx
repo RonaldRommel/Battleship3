@@ -2,39 +2,24 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useAuthContext, AuthProvider } from "../context/AuthContext";
+import { useGameContext, GameProvider } from "../context/GameContext";
 
-export default function MyCompletedGames() {
+function MyCompletedGames() {
   const [completedGames, setCompletedGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUserId, setCurrentUserId] = useState(null);
+  const { myCompletedGames } = useGameContext();
+  const { user, isAuthenticated } = useAuthContext();
 
   useEffect(() => {
-    // Extract user ID from token
-    const token = localStorage.getItem('token');
-    if (token) {
-      try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const payload = JSON.parse(window.atob(base64));
-        setCurrentUserId(payload.id);
-      } catch (e) {
-        console.error("Error decoding token:", e);
-      }
-    }
-
     const fetchMyCompletedGames = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        
-        const response = await axios.get("http://localhost:3000/api/game/mycompleted", {
-          withCredentials: true,
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
+
+        const response = await myCompletedGames();
+
         if (response.data && response.data.games) {
           setCompletedGames(response.data.games);
         } else {
@@ -43,7 +28,11 @@ export default function MyCompletedGames() {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching completed games:", err);
-        setError(`Failed to fetch completed games: ${err.response?.data?.message || err.message}`);
+        setError(
+          `Failed to fetch completed games: ${
+            err.response?.data?.message || err.message
+          }`
+        );
         setLoading(false);
       }
     };
@@ -53,12 +42,12 @@ export default function MyCompletedGames() {
 
   // Determine if current user won the game
   const didUserWin = (game) => {
-    if (!currentUserId) return "Unknown";
-    
+    if (!user.id) return "Unknown";
+
     // Check if user is the winner
-    if (game.winner === currentUserId) {
+    if (game.winner === user.id) {
       return true;
-    } else if (game.winner && game.winner !== currentUserId) {
+    } else if (game.winner && game.winner !== user.id) {
       return false;
     } else {
       return "Draw"; // In case there's no winner (draw)
@@ -67,8 +56,8 @@ export default function MyCompletedGames() {
 
   // Get opponent name based on whether user is creator or opponent
   const getOpponentName = (game) => {
-    if (!currentUserId) return "Unknown";
-    
+    if (!user.id) return "Unknown";
+
     if (game.userID === currentUserId) {
       return game.opponent;
     } else {
@@ -83,8 +72,6 @@ export default function MyCompletedGames() {
       return "Victory";
     } else if (result === false) {
       return "Defeat";
-    } else if (result === "Draw") {
-      return "Draw";
     } else {
       return "Unknown";
     }
@@ -125,7 +112,8 @@ export default function MyCompletedGames() {
           <>
             {completedGames.length === 0 ? (
               <div className="alert alert-info p-4 fs-5 text-center">
-                You don't have any completed games yet. Play some games to see your history here!
+                You don't have any completed games yet. Play some games to see
+                your history here!
               </div>
             ) : (
               <div className="game-list">
@@ -138,32 +126,39 @@ export default function MyCompletedGames() {
                           {formatGameResult(game)}
                         </span>
                       </div>
-                      
+
                       <div className="row mb-3">
                         <div className="col-md-6">
                           <div className="mb-2">
                             <strong>Opponent:</strong> {getOpponentName(game)}
                           </div>
                           <div className="mb-2">
-                            <strong>Your Role:</strong> {game.userID === currentUserId ? 'Creator' : 'Opponent'}
+                            <strong>Your Role:</strong>{" "}
+                            {game.userID === currentUserId
+                              ? "Creator"
+                              : "Opponent"}
                           </div>
                         </div>
                         <div className="col-md-6">
                           <div className="mb-2">
-                            <strong>Started:</strong> {new Date(game.createdAt).toLocaleString()}
+                            <strong>Started:</strong>{" "}
+                            {new Date(game.createdAt).toLocaleString()}
                           </div>
                           <div>
-                            <strong>Ended:</strong> {new Date(game.updatedAt).toLocaleString()}
+                            <strong>Ended:</strong>{" "}
+                            {new Date(game.updatedAt).toLocaleString()}
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <span className="badge bg-secondary me-2">Game ID: {game._id.substring(0, 6)}</span>
+                          <span className="badge bg-secondary me-2">
+                            Game ID: {game._id.substring(0, 6)}
+                          </span>
                         </div>
-                        <Link 
-                          to={`/game/${game._id}`} 
+                        <Link
+                          to={`/game/multiplayer/${game._id}`}
                           className="btn btn-outline-primary"
                         >
                           View Game
@@ -181,16 +176,12 @@ export default function MyCompletedGames() {
   );
 }
 
-
-
-
-
-
-
-
-
-// import React from "react";
-
-// export default function MyCompletedGames() {
-//   return <div>My Completed Games</div>;
-// }
+export default function MyCompletedGamesPage() {
+  return (
+    <AuthProvider>
+      <GameProvider>
+        <MyCompletedGames />
+      </GameProvider>
+    </AuthProvider>
+  );
+}

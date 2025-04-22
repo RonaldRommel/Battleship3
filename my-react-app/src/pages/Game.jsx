@@ -19,9 +19,7 @@ function Game() {
     navigateToPage,
   } = useGameContext();
 
-  useEffect(() => {
-
-  });
+  useEffect(() => {});
   return (
     <>
       <Navbar />
@@ -53,14 +51,8 @@ function Game() {
             onClick={() => {
               navigateToPage("openGames");
             }}
-            disabled={!isAuthenticated}
-            data-bs-toggle="tooltip"
-            data-bs-title="Default tooltip"
           >
             Open Games
-            <span class="ms-3 badge text-bg-primary rounded-pill">
-              Login required
-            </span>
           </button>
           <button
             type="button"

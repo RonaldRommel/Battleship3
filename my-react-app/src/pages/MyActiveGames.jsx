@@ -2,25 +2,19 @@ import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import { useGameContext, GameProvider } from "../context/GameContext";
 
-export default function MyActiveGames() {
+function MyActiveGames() {
   const [activeGames, setActiveGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { myActiveGames } = useGameContext();
 
   useEffect(() => {
     const fetchMyActiveGames = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        
-        const response = await axios.get("http://localhost:3000/api/game/myactive", {
-          withCredentials: true,
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-        
+        const response = await myActiveGames();
         if (response.data && response.data.allGames) {
           setActiveGames(response.data.allGames);
         } else {
@@ -29,27 +23,17 @@ export default function MyActiveGames() {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching active games:", err);
-        setError(`Failed to fetch active games: ${err.response?.data?.message || err.message}`);
+        setError(
+          `Failed to fetch active games: ${
+            err.response?.data?.message || err.message
+          }`
+        );
         setLoading(false);
       }
     };
 
     fetchMyActiveGames();
   }, []);
-
-  // Function to determine if the current user is the creator or opponent
-  const isCreator = (game) => {
-    const token = localStorage.getItem('token');
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const payload = JSON.parse(window.atob(base64));
-      return game.userID === payload.id;
-    } catch (e) {
-      console.error("Error decoding token:", e);
-      return false;
-    }
-  };
 
   return (
     <>
@@ -74,7 +58,8 @@ export default function MyActiveGames() {
           <>
             {activeGames.length === 0 ? (
               <div className="alert alert-info p-4 fs-5 text-center">
-                You don't have any active games. Join or create a game to get started!
+                You don't have any active games. Join or create a game to get
+                started!
               </div>
             ) : (
               <div className="game-list">
@@ -85,7 +70,7 @@ export default function MyActiveGames() {
                         <h5 className="card-title mb-0">Game #{index + 1}</h5>
                         <span className="badge bg-success">Active</span>
                       </div>
-                      
+
                       <div className="row mb-3">
                         <div className="col-md-6">
                           <div className="mb-2">
@@ -96,21 +81,21 @@ export default function MyActiveGames() {
                           </div>
                         </div>
                         <div className="col-md-6">
-                          <div className="mb-2">
-                            <strong>Your Role:</strong> {isCreator(game) ? 'Creator' : 'Opponent'}
-                          </div>
                           <div>
-                            <strong>Started:</strong> {new Date(game.updatedAt).toLocaleString()}
+                            <strong>Started:</strong>{" "}
+                            {new Date(game.updatedAt).toLocaleString()}
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
-                          <span className="badge bg-secondary me-2">Game ID: {game._id.substring(0, 6)}</span>
+                          <span className="badge bg-secondary me-2">
+                            Game ID: {game._id.substring(0, 6)}
+                          </span>
                         </div>
-                        <Link 
-                          to={`/game/${game._id}`} 
+                        <Link
+                          to={`/game/multiplayer/${game._id}`}
                           className="btn btn-primary"
                         >
                           Play Game
@@ -128,25 +113,10 @@ export default function MyActiveGames() {
   );
 }
 
-
-
-
-
-
-
-
-
-
-
-
-// import React from "react";
-// import Navbar from "../components/Navbar";
-
-// export default function MyActiveGames() {
-//   return (
-//     <>
-//       <Navbar />
-//       <div>MyActiveGames</div>
-//     </>
-//   );
-// }
+export default function MyActiveGamesPage() {
+  return (
+    <GameProvider>
+      <MyActiveGames />
+    </GameProvider>
+  );
+}
