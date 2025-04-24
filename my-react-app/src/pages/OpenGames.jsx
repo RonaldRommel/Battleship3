@@ -11,15 +11,18 @@ export default function OpenGames() {
     const fetchOpenGames = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('token');
-        
-        const response = await axios.get("http://localhost:3000/api/game/open", {
-          withCredentials: true,
-          headers: {
-            'Authorization': `Bearer ${token}`
+        const token = localStorage.getItem("token");
+
+        const response = await axios.get(
+          "http://localhost:3000/api/game/open",
+          {
+            withCredentials: true,
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
           }
-        });
-        
+        );
+
         if (response.data && response.data.games) {
           setOpenGames(response.data.games);
         } else {
@@ -28,7 +31,11 @@ export default function OpenGames() {
         setLoading(false);
       } catch (err) {
         console.error("Error fetching open games:", err);
-        setError(`Failed to fetch open games: ${err.response?.data?.message || err.message}`);
+        setError(
+          `Failed to fetch open games: ${
+            err.response?.data?.message || err.message
+          }`
+        );
         setLoading(false);
       }
     };
@@ -38,28 +45,34 @@ export default function OpenGames() {
 
   const handleJoinGame = async (gameId) => {
     try {
-      const token = localStorage.getItem('token');
-      
-      await axios.post(`http://localhost:3000/api/game/joingame/${gameId}`, {}, {
-        withCredentials: true,
-        headers: {
-          'Authorization': `Bearer ${token}`
+      const token = localStorage.getItem("token");
+
+      await axios.post(
+        `http://localhost:3000/api/game/joingame/${gameId}`,
+        {},
+        {
+          withCredentials: true,
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         }
-      });
-      
+      );
+
       // Refresh the games list after joining
       const response = await axios.get("http://localhost:3000/api/game/open", {
         withCredentials: true,
         headers: {
-          'Authorization': `Bearer ${token}`
-        }
+          Authorization: `Bearer ${token}`,
+        },
       });
-      
+
       if (response.data && response.data.games) {
         setOpenGames(response.data.games);
       }
     } catch (err) {
-      setError(`Failed to join game: ${err.response?.data?.message || err.message}`);
+      setError(
+        `Failed to join game: ${err.response?.data?.message || err.message}`
+      );
       console.error("Error joining game:", err);
     }
   };
@@ -88,7 +101,8 @@ export default function OpenGames() {
           <>
             {openGames.length === 0 ? (
               <div className="alert alert-info p-4 fs-5 text-center">
-                There are no open games available. Create a new game to get started!
+                There are no open games available. Create a new game to get
+                started!
               </div>
             ) : (
               <div className="game-list">
@@ -96,27 +110,36 @@ export default function OpenGames() {
                   <div key={game._id} className="card mb-3">
                     <div className="card-body d-flex justify-content-between align-items-center p-4">
                       <div>
-                        <div className="fw-bold fs-5 mb-2">Game #{index + 1} - Created by: {game.user}</div>
+                        <div className="fw-bold fs-5 mb-2">
+                          Game #{index + 1} - Created by: {game.user}
+                        </div>
                         <div className="mb-2">
-                          <span className="badge bg-secondary me-2">Status: {game.status}</span>
+                          <span className="badge bg-secondary me-2">
+                            Status: {game.status}
+                          </span>
                         </div>
                         <div>
                           <strong>Creator:</strong> {game.user}
-                          <span className="text-warning"> (Waiting for opponent)</span>
+                          <span className="text-warning">
+                            {" "}
+                            (Waiting for opponent)
+                          </span>
                         </div>
                         <div className="mt-2">
-                          <small className="text-muted">Created: {new Date(game.createdAt).toLocaleString()}</small>
+                          <small className="text-muted">
+                            Created: {new Date(game.createdAt).toLocaleString()}
+                          </small>
                         </div>
                       </div>
                       <div className="d-flex align-items-center">
-                        <button 
+                        <button
                           className="btn btn-primary me-2"
                           onClick={() => handleJoinGame(game._id)}
                         >
                           Join Game
                         </button>
                         <button className="btn btn-outline-secondary">
-                          Game ID: {game._id.substring(0, 6)}
+                          Game ID: {game._id.slice(-6)}
                         </button>
                       </div>
                     </div>
@@ -130,15 +153,6 @@ export default function OpenGames() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
 
 // import React from "react";
 

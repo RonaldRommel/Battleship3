@@ -91,7 +91,7 @@ function MyActiveGames() {
                       <div className="d-flex justify-content-between align-items-center">
                         <div>
                           <span className="badge bg-secondary me-2">
-                            Game ID: {game._id.substring(0, 6)}
+                            Game ID: {game._id.slice(-6)}
                           </span>
                         </div>
                         <Link

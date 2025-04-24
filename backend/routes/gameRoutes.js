@@ -32,7 +32,7 @@ router.post("/joingame/:gameID", verifyToken, (req, res) => {
   gameController.joinGame(req, res);
 });
 
-router.post("/:gameID/move", verifyToken, (req, res) => {
+router.put("/:gameID/move", verifyToken, (req, res) => {
   gameController.makeMove(req, res);
 });
 
