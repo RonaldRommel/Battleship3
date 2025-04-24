@@ -1,5 +1,11 @@
 const Game = require("../models/gameModel");
 
+function shipsArePlaced(board) {
+  const filledCells = board.reduce((count, row) => {
+    return count + row.filter((cell) => cell > 0).length;
+  }, 0);
+}
+
 exports.openGames = async (req, res) => {
   const user = req.user;
   try {
@@ -57,7 +63,10 @@ exports.myActiveGames = async (req, res) => {
 exports.myCompletedGames = async (req, res) => {
   const user = req.user;
   try {
-    const games = await Game.find({ userID: user.id, status: "completed" });
+    const games = await Game.find({
+      status: "completed",
+      $or: [{ userID: user.id }, { opponentID: user.id }],
+    });
     res.status(200).json({
       message: "Completed games retrieved successfully",
       games,
@@ -109,7 +118,7 @@ exports.joinGame = async (req, res) => {
       game.opponent = user.firstName + " " + user.lastName;
       game.opponentID = user.id;
       game.status = "active";
-      game.startTime = new Date();
+      console.log(game);
       try {
         await game.save();
         return res.status(200).json({
@@ -118,7 +127,7 @@ exports.joinGame = async (req, res) => {
         });
       } catch (error) {
         return res.status(500).json({
-          message: "Server error",
+          message: "Server error hmmm",
           error,
         });
       }
@@ -166,20 +175,18 @@ exports.makeMove = async (req, res) => {
     });
   }
   if (!(updatedGame.userID === user.id || updatedGame.opponentID === user.id)) {
-    console.log(typeof updatedGame.userID);
-    console.log(typeof user.id);
-    console.log(updatedGame.userID !== user.id);
     return res.status(403).json({
       message: "You are not authorized to make this move",
-      values: {
-        userID: updatedGame.userID,
-        opponentID: updatedGame.opponentID,
-        user: user.id,
-      },
     });
   }
   delete updatedGame._id;
+  console.log("_____BEFORE____UPDATED GAME_____", updatedGame);
   try {
+    updatedGame.turn =
+      updatedGame.turn === user.id
+        ? updatedGame.opponentID
+        : updatedGame.userID; // Switching turns
+    console.log("_____UPDATED GAME_____", updatedGame);
     await Game.updateOne({ _id: gameId }, updatedGame);
     res.status(200).json({
       message: "Game updated successfully",
@@ -194,13 +201,12 @@ exports.makeMove = async (req, res) => {
 };
 
 exports.highscores = async (req, res) => {
-  try{
-    const allGames = await Game.find({status: "completed"});
-  }
-  catch (error) {
+  try {
+    const allGames = await Game.find({ status: "completed" });
+  } catch (error) {
     return res.status(500).json({
       message: "Server error",
       error,
     });
   }
-}
+};

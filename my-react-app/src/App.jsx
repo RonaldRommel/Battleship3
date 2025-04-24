@@ -23,10 +23,6 @@ function App() {
             Start Game
           </button>
         </Link>
-
-        <button type="button" className="btn btn-warning" onClick={handleClick}>
-          Click me {user && user.firstName}
-        </button>
       </div>
     </>
   );

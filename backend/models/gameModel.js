@@ -56,9 +56,10 @@ const GameSchema = new mongoose.Schema(
       default: "open",
     },
     turn: {
-      type: String,
-      enum: ["user", "opponent"],
-      default: "user",
+      type: mongoose.Schema.Types.ObjectId,
+      default: function () {
+        return this.userID;
+      },
     },
   },
   {

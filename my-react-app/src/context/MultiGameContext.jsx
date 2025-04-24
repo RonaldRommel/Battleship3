@@ -1,6 +1,14 @@
 // Import necessary hooks and functions from React to create and use context
-import React, { createContext, useState, useContext, useEffect } from "react";
-
+import React, {
+  createContext,
+  useState,
+  useContext,
+  useEffect,
+  use,
+} from "react";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useAuthContext } from "./AuthContext";
 // Define game constants
 const BOARD_SIZE = 10; // Size of the game board (10x10 grid)
 const SHIP_SIZES = [5, 4, 3, 3, 2]; // Sizes of ships to be placed (5 ships of different lengths)
@@ -97,6 +105,7 @@ const MultiGameContext = createContext();
 
 // Provider component that wraps the game components and provides multiplayer game state
 const MultiGameProvider = ({ children }) => {
+  const [gameId, setGameId] = useState(null);
   // Game timer state
   const [timeElapsed, setTimeElapsed] = useState(0); // Track game duration in seconds
   const [timerRunning, setTimerRunning] = useState(false); // Control whether timer is active
@@ -104,6 +113,7 @@ const MultiGameProvider = ({ children }) => {
   // Track ships sunk for both players
   const [myShipsSunk, setMyShipsSunk] = useState(0); // Player's ships that have been sunk
   const [opShipsSunk, setOpShipsSunk] = useState(0); // Opponent's ships that have been sunk
+  const [turn, setTurn] = useState(false); // Track whose turn it is
 
   // Set up the game timer that increments every second while the game is running
   useEffect(() => {
@@ -125,7 +135,7 @@ const MultiGameProvider = ({ children }) => {
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
   );
 
-  // Opponent's board state (where AI's ships are placed)
+  // Opponent's board state (where AI's ships are placed)tai
   const [opBoard, setOpBoard] = useState(
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
   );
@@ -133,12 +143,13 @@ const MultiGameProvider = ({ children }) => {
   const [opBoardUI, setOpBoardUI] = useState(
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
   );
+  const [isCreator, setIsCreator] = useState(null); // Creator of the game
 
   // Modal state for displaying game results
   const [modalTitle, setModalTitle] = useState(""); // Title for the result modal
   const [modalContent, setModalContent] = useState(""); // Content for the result modal
   const [showModal, setShowModal] = useState(false); // Controls modal visibility
-
+  const [gameDetails, setGameDetails] = useState(null); // Game details fetched from backend
   // Function to close the result modal and stop the timer
   const closeModal = () => {
     setShowModal(false);
@@ -149,16 +160,79 @@ const MultiGameProvider = ({ children }) => {
   const startTimer = () => {
     setTimerRunning(true);
   };
+  const { isAuthenticated, user } = useAuthContext();
 
-  // Initialize opponent's board with random ship placement when component mounts
-  useEffect(() => {
-    randomShipPlacement(opBoard, setOpBoard);
-  }, []);
+  const updateBoardInDB = async () => {
+    if (isCreator) {
+      gameDetails.userBoard = myBoard;
+    } else {
+      gameDetails.opponentBoard = myBoard;
+      gameDetails.startTime = new Date();
+    }
+    console.log("Game details to update:", gameDetails);
+    try {
+      const res = await axios.put(
+        `/api/game/${gameId}/move`,
+        { game: gameDetails },
+        { withCredentials: true }
+      );
+      console.log("Game updated successfully:", res.data);
+    } catch (error) {
+      console.error("Error updating game:", error);
+    }
+  };
 
-  // Log opponent's board for debugging purposes
+  //Call backend and set the board and other details
   useEffect(() => {
-    console.log("OpBoard", opBoard);
-  }, [opBoard]);
+    if (gameId !== null && user !== null) {
+      const fetchGameDetails = async () => {
+        try {
+          const res = await axios.get(`/api/game/${gameId}`, {
+            withCredentials: true,
+          });
+          setGameDetails(res.data.game);
+          setIsCreator(user.id === res.data.game.userID);
+          if (res.data.game.winner) {
+            setTurn(null);
+          } else {
+            setTurn(res.data.game.turn === user.id);
+          }
+        } catch (error) {
+          console.error("Error fetching game details:", error);
+        }
+      };
+
+      fetchGameDetails();
+    }
+  }, [gameId, user]);
+
+  useEffect(() => {
+    if (isCreator !== null && gameDetails !== null) {
+      if (isCreator) {
+        console.log(
+          "User is creator",
+          user.id,
+          gameDetails.userID,
+          gameDetails.user
+        );
+        setMyBoard(gameDetails.userBoard);
+        setMyBoardUI(gameDetails.userBoard); //change this
+        setOpBoard(gameDetails.opponentBoard);
+        setOpBoardUI(gameDetails.opponentBoard); //change this
+      } else {
+        console.log(
+          "User is opponent",
+          user.id,
+          gameDetails.opponentID,
+          gameDetails.opponent
+        );
+        setMyBoard(gameDetails.opponentBoard);
+        setMyBoardUI(gameDetails.opponentBoard); //change this
+        setOpBoard(gameDetails.userBoard);
+        setOpBoardUI(gameDetails.userBoard); //change this
+      }
+    }
+  }, [isCreator]);
 
   // Function to randomly place ships on player's board
   const myShipRandom = () => {
@@ -198,7 +272,7 @@ const MultiGameProvider = ({ children }) => {
     BoardOperation(row, col, opBoard, setOpShipsSunk, newOPCellStates);
     // Update the opponent's UI board
     setOpBoardUI(newOPCellStates);
-    
+
     // After a short delay, let the AI make its move
     setTimeout(() => {
       // Create a copy of player's UI board
@@ -219,7 +293,6 @@ const MultiGameProvider = ({ children }) => {
     }, 500); // 500ms delay before AI's move
   };
 
-  // Check if player has won (sunk all opponent's ships)
   useEffect(() => {
     if (opShipsSunk === shipToSink) {
       setModalTitle("Congratulations!");
@@ -228,7 +301,6 @@ const MultiGameProvider = ({ children }) => {
     }
   }, [opShipsSunk]);
 
-  // Check if AI has won (sunk all player's ships)
   useEffect(() => {
     if (myShipsSunk === shipToSink) {
       setModalTitle("Game Over!");
@@ -266,21 +338,27 @@ const MultiGameProvider = ({ children }) => {
   return (
     <MultiGameContext.Provider
       value={{
-        myBoard,             // Player's board with ship positions
-        handleMyBoardClick,  // Function for handling clicks on player's board
-        timeElapsed,         // Game timer
-        myShipRandom,        // Function to randomly place player's ships
-        myBoardUI,           // UI representation of player's board
-        opBoardUI,           // UI representation of opponent's board
-        handleOpBoardClick,  // Function for handling player's attacks
-        myShipsSunk,         // Count of player's ship cells hit
-        opShipsSunk,         // Count of opponent's ship cells hit
-        showModal,           // Controls visibility of result modal
-        closeModal,          // Function to close the result modal
-        modalTitle,          // Title for the result modal
-        modalContent,        // Content for the result modal
-        startTimer,          // Function to start the game timer
-        getButtonClass,      // Function to get CSS class for cells
+        myBoard, // Player's board with ship positions
+        handleMyBoardClick, // Function for handling clicks on player's board
+        timeElapsed, // Game timer
+        myShipRandom, // Function to randomly place player's ships
+        myBoardUI, // UI representation of player's board
+        opBoardUI, // UI representation of opponent's board
+        handleOpBoardClick, // Function for handling player's attacks
+        myShipsSunk, // Count of player's ship cells hit
+        opShipsSunk, // Count of opponent's ship cells hit
+        showModal, // Controls visibility of result modal
+        closeModal, // Function to close the result modal
+        modalTitle, // Title for the result modal
+        modalContent, // Content for the result modal
+        startTimer, // Function to start the game timer
+        getButtonClass, // Function to get CSS class for cells
+        setGameId,
+        updateBoardInDB,
+        gameDetails,
+        isCreator,
+        turn,
+        setTurn,
       }}
     >
       {children}
@@ -293,18 +371,6 @@ const useMultiGameContext = () => useContext(MultiGameContext);
 
 // Export both the provider component and the custom hook
 export { MultiGameProvider, useMultiGameContext };
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import React, { createContext, useState, useContext, useEffect } from "react";
 
