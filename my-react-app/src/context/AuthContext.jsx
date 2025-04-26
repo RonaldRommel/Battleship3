@@ -80,7 +80,6 @@
 
 // // Export both the provider component and the custom hook
 // export { AuthProvider, useAuthContext };
-const API = import.meta.env.VITE_API_BASE_URL;
 
 import React, {
   createContext,
@@ -98,8 +97,7 @@ const AuthProvider = ({ children }) => {
 
   const handleLogin = async () => {
     try {
-      console.log("API URL:", API);
-      const res = await axios.get(API + "/api/auth/user", {
+      const res = await axios.get( "/api/auth/user", {
         withCredentials: true,
       });
       setUser(res.data.user);
@@ -115,7 +113,7 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const handleLogout = async () => {
-    await axios.post(API + "/api/auth/logout", null, {
+    await axios.post( "/api/auth/logout", null, {
       withCredentials: true,
     });
     setUser(null);

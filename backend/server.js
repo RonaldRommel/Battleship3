@@ -10,7 +10,7 @@ const gameRoutes = require("./routes/gameRoutes");
 const cookieParser = require("cookie-parser");
 
 const corsOptions = {
-  origin: ["http://localhost:5173", "https://battleship3-1-dug9.onrender.com"],
+  origin: ["http://localhost:5173",],
   credentials: true, // Allow cookies to be sent with requests
 };
 
