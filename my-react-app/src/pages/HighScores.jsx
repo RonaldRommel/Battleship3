@@ -1,52 +1,97 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Navbar from "../components/Navbar";
-import "../App.css"; 
-
+import "../App.css";
+import { useAuthContext, AuthProvider } from "../context/AuthContext";
+import axios from "axios";
 function Highscore() {
-  
-  const highScores = [
-    { name: "Alice", score: 100 },
-    { name: "Bob", score: 85 },
-    { name: "Charlie", score: 70 },
-    { name: "David", score: 120 },
-    { name: "Eva", score: 95 },
-    { name: "Frank", score: 110 },
-    { name: "Grace", score: 80 },
-    { name: "Hannah", score: 130 },
-    { name: "Ian", score: 60 },
-    { name: "Jack", score: 75 },
-  ];
+  const [highScores, setHighScores] = useState([]);
+  const { user, isAuthenticated } = useAuthContext();
 
-  
+  useEffect(() => {
+    const fetchHighScores = async () => {
+      try {
+        const response = await axios.get("/api/game/highscores");
+        if (response.data && response.data.highscores) {
+          setHighScores(response.data.highscores);
+        }
+      } catch (error) {
+        console.error("Error fetching high scores:", error);
+      }
+    };
+
+    fetchHighScores();
+  }, []);
+
   const sortedScores = highScores.sort((a, b) => b.score - a.score);
 
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h1>HighScores</h1>
-        <p>These are the top scores</p>
-        <table className="highscore-table">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Name</th>
-              <th>Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {sortedScores.map((score, index) => (
-              <tr key={index}>
-                <td>{index + 1}</td>
-                <td>{score.name}</td>
-                <td>{score.score}</td>
+      {isAuthenticated && (
+        <div className="container">
+          <h1>HighScores</h1>
+          <p>These are the top scores</p>
+          <table className="highscore-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Wins</th>
+                <th>Losses</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody>
+              {sortedScores.map((score, index) => (
+                <tr
+                  key={index}
+                  style={{
+                    fontWeight: score.id === user.id ? "bold" : "normal",
+                  }}
+                >
+                  <td>{index + 1}</td>
+                  <td>{score.username}</td>
+                  <td>{score.wins}</td>
+                  <td>{score.losses}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {!isAuthenticated && (
+        <div className="container">
+          <h1>HighScores</h1>
+          <p>These are the top scores</p>
+          <table className="highscore-table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Wins</th>
+                <th>Losses</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedScores.map((score, index) => (
+                <tr key={index}>
+                  <td>{index + 1}</td>
+                  <td>{score.username}</td>
+                  <td>{score.wins}</td>
+                  <td>{score.losses}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </>
   );
 }
 
-export default Highscore;
+export default function HighscorePage() {
+  return (
+    <AuthProvider>
+      <Highscore />
+    </AuthProvider>
+  );
+}

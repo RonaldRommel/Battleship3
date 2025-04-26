@@ -24,6 +24,10 @@ router.post("/newgame", verifyToken, (req, res) => {
   gameController.createGame(req, res);
 });
 
+router.get("/highscores", (req, res) => {
+  gameController.highscores(req, res);
+});
+
 router.get("/:gameID", verifyToken, (req, res) => {
   gameController.joinActiveGame(req, res);
 });
@@ -36,15 +40,31 @@ router.put("/:gameID/move", verifyToken, (req, res) => {
   gameController.makeMove(req, res);
 });
 
-//DUMMY
-router.get("/open/:gameID", async (req, res) => {
-  const gameID = req.params.gameID;
+//to reset the games
+router.put("/reset", async (req, res) => {
   try {
-    const game = await Game.findById(gameID);
-    if (!game) {
-      return res.status(404).json({ message: "Game not found" });
-    }
-    res.status(200).json({ message: "Game found", game });
+    await Game.updateMany(
+      {}, // Select all games
+      {
+        $set: {
+          // Reset fields
+          userBoard: Array.from({ length: 10 }, () => Array(10).fill(0)),
+          opponentBoard: Array.from({ length: 10 }, () => Array(10).fill(0)),
+          userBoardUI: Array.from({ length: 10 }, () => Array(10).fill(0)),
+          opponentBoardUI: Array.from({ length: 10 }, () => Array(10).fill(0)),
+          opponent: null,
+          opponentID: null,
+          userShips: 0,
+          opponentShips: 0,
+          duration: null,
+          startTime: null,
+          turn: "user",
+          status: "open",
+          winner: null,
+        },
+      }
+    );
+    res.status(200).json({ message: "All games reset successfully" });
   } catch (error) {
     console.error("ERROR:", error);
     res.status(500).json({ message: "Server error", error });

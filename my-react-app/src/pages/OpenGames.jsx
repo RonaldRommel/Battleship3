@@ -1,25 +1,22 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "../components/Navbar";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 export default function OpenGames() {
   const [openGames, setOpenGames] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOpenGames = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem("token");
-
         const response = await axios.get(
-          "http://localhost:3000/api/game/open",
+          "/api/game/open",
           {
             withCredentials: true,
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
           }
         );
 
@@ -45,30 +42,10 @@ export default function OpenGames() {
 
   const handleJoinGame = async (gameId) => {
     try {
-      const token = localStorage.getItem("token");
-
-      await axios.post(
-        `http://localhost:3000/api/game/joingame/${gameId}`,
-        {},
-        {
-          withCredentials: true,
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      // Refresh the games list after joining
-      const response = await axios.get("http://localhost:3000/api/game/open", {
+      await axios.post(`/api/game/joingame/${gameId}`, {
         withCredentials: true,
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
-
-      if (response.data && response.data.games) {
-        setOpenGames(response.data.games);
-      }
+      navigate(`/game/multiplayer/${gameId}`);
     } catch (err) {
       setError(
         `Failed to join game: ${err.response?.data?.message || err.message}`

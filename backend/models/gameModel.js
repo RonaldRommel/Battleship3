@@ -25,18 +25,32 @@ const GameSchema = new mongoose.Schema(
     userBoard: {
       type: [[Number]],
       default: defaultBoard,
+      required: true,
     },
     opponentBoard: {
       type: [[Number]],
       default: defaultBoard,
+      required: true,
     },
     userBoardUI: {
       type: [[Number]],
       default: defaultBoard,
+      required: true,
     },
     opponentBoardUI: {
       type: [[Number]],
       default: defaultBoard,
+      required: true,
+    },
+    userShips: {
+      type: Number,
+      default: 0,
+      required: true,
+    },
+    opponentShips: {
+      type: Number,
+      default: 0,
+      required: true,
     },
     winner: {
       type: String,
@@ -54,12 +68,13 @@ const GameSchema = new mongoose.Schema(
       type: String,
       enum: ["open", "active", "completed"],
       default: "open",
+      required: true,
     },
     turn: {
-      type: mongoose.Schema.Types.ObjectId,
-      default: function () {
-        return this.userID;
-      },
+      type: String,
+      enum: ["user", "opponent"],
+      default: "user", // or whoever should start first
+      required: true,
     },
   },
   {

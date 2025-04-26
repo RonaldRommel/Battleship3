@@ -7,13 +7,20 @@ const GameContext = createContext();
 const GameProvider = ({ children }) => {
   const navigate = useNavigate();
 
-  const navigateToPage = (val) => {
+  const navigateToPage = async (val) => {
     switch (val) {
       case "freeplay":
         navigate("/game/freeplay");
         break;
       case "normal":
         navigate("/game/normal");
+        break;
+      case "multiplayer":
+        const res = await axios.post("/api/game/newgame", {
+          withCredentials: true,
+        });
+        console.log("New Game created:", res.data);
+        navigate("/game/my-open-games");
         break;
       case "openGames":
         navigate("/game/open-games");
