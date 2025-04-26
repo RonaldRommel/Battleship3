@@ -1,4 +1,5 @@
 // Import necessary hooks and functions from React to create and use context
+const API = import.meta.env.VITE_API_BASE_URL;
 import React, {
   createContext,
   useState,
@@ -191,7 +192,7 @@ const MultiGameProvider = ({ children }) => {
     }
     console.log("Game details to update:", gameDetails);
     try {
-      const res = await axios.put(
+      const res = await axios.put(API+
         `/api/game/${gameId}/move`,
         { game: gameDetails },
         { withCredentials: true }
@@ -207,7 +208,7 @@ const MultiGameProvider = ({ children }) => {
     if (gameId !== null && user !== null) {
       const fetchGameDetails = async () => {
         try {
-          const res = await axios.get(`/api/game/${gameId}`, {
+          const res = await axios.get(API+`/api/game/${gameId}`, {
             withCredentials: true,
           });
           setGameDetails(res.data.game);
@@ -309,7 +310,7 @@ const MultiGameProvider = ({ children }) => {
     }
     console.log("Player Move Updated", gameDetails);
     try {
-      const res = await axios.put(
+      const res = await axios.put(API+
         `/api/game/${gameId}/move`,
         { game: gameDetails },
         { withCredentials: true }

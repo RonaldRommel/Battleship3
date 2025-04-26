@@ -14,7 +14,7 @@ const Login = () => {
   const [isValid, setIsValid] = useState(true); // To track overall form validity
   const navigate = useNavigate();
   const { handleLogin } = useAuthContext();
-
+  const API = import.meta.env.VITE_API_BASE_URL;
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,7 +40,7 @@ const Login = () => {
         console.log("Form Submitted", formData);
 
         // Make the login API request
-        const response = await axios.post("/api/auth/login", formData, {
+        const response = await axios.post(API+"/api/auth/login", formData, {
           withCredentials: true,
         });
 
