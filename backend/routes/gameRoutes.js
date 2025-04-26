@@ -24,6 +24,10 @@ router.post("/newgame", verifyToken, (req, res) => {
   gameController.createGame(req, res);
 });
 
+router.get("/othergame", verifyToken, (req, res) => {
+  gameController.otherGames(req, res);
+});
+
 router.get("/highscores", (req, res) => {
   gameController.highscores(req, res);
 });

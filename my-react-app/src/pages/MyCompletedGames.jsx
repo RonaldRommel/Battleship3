@@ -57,11 +57,19 @@ function MyCompletedGames() {
   // Get opponent name based on whether user is creator or opponent
   const getOpponentName = (game) => {
     if (!user.id) return "Unknown";
-
-    if (game.userID === currentUserId) {
+    if (user.id === game.userID) {
       return game.opponent;
     } else {
       return game.user;
+    }
+  };
+
+  const getPlayerName = (game) => {
+    if (!user.id) return "Unknown";
+    if (user.id === game.userID) {
+      return game.user;
+    } else {
+      return game.opponent;
     }
   };
 
@@ -130,13 +138,10 @@ function MyCompletedGames() {
                       <div className="row mb-3">
                         <div className="col-md-6">
                           <div className="mb-2">
-                            <strong>Opponent:</strong> {getOpponentName(game)}
+                            <strong>Player:</strong> {getPlayerName(game)}
                           </div>
                           <div className="mb-2">
-                            <strong>Your Role:</strong>{" "}
-                            {game.userID === currentUserId
-                              ? "Creator"
-                              : "Opponent"}
+                            <strong>Opponent:</strong> {getOpponentName(game)}
                           </div>
                         </div>
                         <div className="col-md-6">
