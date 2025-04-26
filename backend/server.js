@@ -34,6 +34,9 @@ mongoose
 // mongoose.connection.on("connected", () => {
 //   console.log("MongoDB connected to: ", mongoose.connection.name);
 // });
+app.get("/", (req, res) => {
+  res.send("Hello from the backend!");
+});
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);

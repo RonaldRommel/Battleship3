@@ -49,7 +49,7 @@ exports.login = async (req, res) => {
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
       secure: true,
-      sameSite: "Strict",
+      sameSite: "None",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
