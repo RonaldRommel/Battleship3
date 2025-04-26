@@ -1,5 +1,19 @@
 const Game = require("../models/gameModel");
 
+const formatTimeElapsed = (seconds) => {
+  // Calculate hours, minutes, and seconds
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = seconds % 60;
+
+  // Format the time as hh:mm:ss
+  const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+    .toString()
+    .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+
+  return formattedTime;
+};
+
 function shipsArePlaced(board) {
   const filledCells = board.reduce((count, row) => {
     return count + row.filter((cell) => cell > 0).length;
@@ -201,14 +215,14 @@ exports.makeMove = async (req, res) => {
     if (updatedGame.status === "active") {
       if (updatedGame.userShips === 17) {
         updatedGame.status = "completed";
-        updatedGame.winner = updatedGame.userID;
-        updatedGame.duration = Math.floor(
+        updatedGame.winner = updatedGame.opponentID;
+        updatedGame.duration = formatTimeElapsed(
           (new Date() - new Date(updatedGame.startTime)) / 1000
         );
       } else if (updatedGame.opponentShips === 17) {
         updatedGame.status = "completed";
-        updatedGame.winner = updatedGame.opponentID;
-        updatedGame.duration = Math.floor(
+        updatedGame.winner = updatedGame.userID;
+        updatedGame.duration = formatTimeElapsed(
           (new Date() - new Date(updatedGame.startTime)) / 1000
         );
       }
