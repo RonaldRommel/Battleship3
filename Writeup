@@ -1,41 +1,19 @@
 1. What were some challenges you faced while making this app?
-
-While developing this app, we encountered several challenges, primarily in the following areas:
-
-> > Making Components Reusable:
-> > Designing components like Board and Modal to be reusable was a significant challenge. We ensured flexibility by using props and managing state with useContext, reducing redundancy and making the code cleaner.
-
-> > Writing Clean Code:
-> > Maintaining clean and maintainable code while handling game logic, UI components, and state management was challenging. Following best practices like component reusability, modular design, and meaningful function naming helped overcome this.
+While building the fullstack Battleship application, one of the major challenges we encountered was implementing secure user authentication and managing sessions using cookies. 
+Ensuring that login, registration, and logout functionality worked seamlessly across pages, while respecting the correct redirect behavior, required precise coordination between the frontend and backend. 
+Another challenge was establishing smooth communication between the frontend React components and the Express backend via RESTful APIs—especially while handling game state and user interactions in a way that followed the specified game logic. 
+Additionally, deploying the app on Render with environment variables and handling runtime errors during deployment took several attempts and required careful debugging.
 
 2. Given more time, what additional features, functional or design changes would you make?
-
-If we had more time, we would enhance the app with the following features:
-
-> > Local Storage Integration:
-> > Implement local storage to save game progress, allowing users to resume their game later without losing progress.
-
-> > Click and Drag Ship Placement:
-> > Introduce a drag-and-drop interface for ship placement. This would improve user experience and make ship positioning more intuitive.
-
-> > Improved Navigation:
-> > Enhance navigation by reducing URL changes and using modals or conditional rendering instead. Adding smooth transitions would create a more seamless user experience.
-
-> > Sound Effects and Animations:
-> > Add sound effects for hits, misses, and ship placements, along with animations for ship movements and explosions.
-
-> > Multiplayer Mode:
-> > Implement a real-time multiplayer mode using WebSockets for users to compete with friends or random opponents.
+If we had more time, we would enhance the UI/UX design to make it more interactive and responsive across devices. 
+This includes adding sound effects, animations for hits/misses, and visual feedback to improve the gaming experience. 
+Functionally, we’d also love to add the ability for users to play with random online opponents, as well as a tutorial overlay or modal for new users to better understand how to navigate the game. 
+These additions would improve both engagement and accessibility.
 
 3. What assumptions did you make while working on this assignment?
-
-We assumed the app would have separate pages for game modes and gameplay, simplifying routing with React Router. Users would prefer an easy-to-use interface for ship placement, so we implemented both manual and random ship placement options. The game would follow a turn-based system where players alternate moves until one side wins. The opponent's moves are automated using a simple AI, without the need for a complex algorithm.
+We assumed that each username would be unique in the system, and thus used it as a key identifier throughout our database and frontend logic. 
+Additionally, we assumed that users were familiar with the basic rules of Battleship, so we did not implement an in-game tutorial or detailed instructions. 
+We also assumed a low volume of users (in line with the assignment scope), so performance optimizations and real-time updates were not prioritized.
 
 4. How long did this assignment take to complete?
-
-The assignment took approximately 30 hours to complete, distributed as follows:
-Planning and Designing (5 hours): Creating wireframes and determining the overall design and user flow.
-Component Development (10 hours): Building reusable components like Board, Timer, and Modal.
-Game Logic Implementation (8 hours): Developing ship placement, hit detection, and game state management.
-Styling and UI Enhancements (4 hours): Writing CSS for responsiveness and enhancing visual appeal.
-Testing and Debugging (3 hours): Conducting unit testing, fixing bugs, and optimizing performance.
+This project took approximately 80 hours to complete. This includes time spent designing the user interface, setting up the backend API and MongoDB schemas, handling cookie-based authentication, implementing gameplay logic, and troubleshooting issues during deployment and testing.
