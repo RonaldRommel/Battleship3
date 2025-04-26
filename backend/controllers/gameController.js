@@ -102,7 +102,33 @@ exports.myCompletedGames = async (req, res) => {
   }
 };
 
-exports.otherGames = async (req, res) => {};
+exports.otherGames = async (req, res) => {
+  const user = req.user;
+  try {
+    const activeGames = await Game.find({
+      userID: { $ne: user.id },
+      status: "active",
+    }).sort({
+      startTime: -1,
+    });
+    const completedGames = await Game.find({
+      userID: { $ne: user.id },
+      status: "completed",
+    }).sort({
+      startTime: -1,
+    });
+    res.status(200).json({
+      message: "Other games retrieved successfully",
+      activeGames,
+      completedGames,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Server error",
+      error,
+    });
+  }
+};
 
 exports.createGame = async (req, res) => {
   const user = req.user;
