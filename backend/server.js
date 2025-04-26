@@ -10,7 +10,7 @@ const gameRoutes = require("./routes/gameRoutes");
 const cookieParser = require("cookie-parser");
 
 const corsOptions = {
-  origin: "http://localhost:5173", // frontend URL
+  origin: ['http://localhost:4173',"https://ronaldrommel.github.io/Battleship3"], // frontend URL
   credentials: true, // Allow cookies to be sent with requests
 };
 
