@@ -10,7 +10,7 @@ const gameRoutes = require("./routes/gameRoutes");
 const cookieParser = require("cookie-parser");
 
 const corsOptions = {
-  origin: "https://ronaldrommel.github.io", // frontend URL
+  origin: ["https://ronaldrommel.github.io"], // frontend URL
   credentials: true, // Allow cookies to be sent with requests
 };
 
