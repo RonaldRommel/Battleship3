@@ -24,6 +24,7 @@ function Multiplayer() {
     getButtonClass,
     turn,
     setTurn,
+    formatTimeElapsed,
   } = useMultiGameContext();
   const { myBoard, handleMyBoardClick, myShipRandom, myBoardUI, setGameId } =
     useMultiGameContext();
@@ -101,7 +102,7 @@ function Multiplayer() {
             }}
           >
             <h1 className="large-title">Multiplayer Game</h1>
-            <Timer timeElapsed={timeElapsed} />
+            <Timer timeElapsed={formatTimeElapsed(timeElapsed)} />
             <div className="board-wrapper">
               <div>
                 <h2 className="small-title">
