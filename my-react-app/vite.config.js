@@ -8,7 +8,7 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:3000", // Your Node server
+        target: "https://battleship3-5.onrender.com", // Your Node server
         changeOrigin: true,
         secure: false,
       },

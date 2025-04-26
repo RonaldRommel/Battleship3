@@ -4,7 +4,7 @@ import React, { createContext, useState, useContext, useEffect } from "react";
 const AuthContext = createContext();
 // Import axios for making HTTP requests to the backend
 import axios from "axios";
-
+const API= "https://battleship3-3.onrender.com";
 // Define the AuthProvider component that will wrap the application
 // It accepts children props which are the components that will have access to the auth context
 const AuthProvider = ({ children }) => {
@@ -22,7 +22,7 @@ const AuthProvider = ({ children }) => {
     try {
       // Make a GET request to the authentication endpoint
       // withCredentials: true ensures cookies are sent with the request (important for session-based auth)
-      const res = await axios.get("/api/auth/user", {
+      const res = await axios.get(API+"/api/auth/user", {
         withCredentials: true,
       });
       // Update the user state with the user data from the response
@@ -48,7 +48,7 @@ const AuthProvider = ({ children }) => {
   const handleLogout = async () => {
     // Make a POST request to the logout endpoint
     // null is passed as the second parameter since no data needs to be sent
-    await axios.post("/api/auth/logout", null, {
+    await axios.post(API+"/api/auth/logout", null, {
       withCredentials: true,
     });
     // Reset the user state to null (no user)
