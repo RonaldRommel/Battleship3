@@ -359,13 +359,13 @@ const MultiGameProvider = ({ children }) => {
   useEffect(() => {
     if (myShipsSunk === shipToSink && isCreator) {
       console.log("my sunk all ships and Creator");
-      setModalTitle("Congratulations!");
-      setModalContent(`You have sunk all the ships in ${timeElapsed} seconds!`);
+      setModalTitle("Game Over!");
+      setModalContent(`You have lost the game in ${timeElapsed} seconds!`);
       setTimerRunning(false);
     } else if (myShipsSunk === shipToSink && !isCreator) {
       console.log("my sunk all ships and not Creator");
-      setModalTitle("Game Over!");
-      setModalContent(`You have lost the game in ${timeElapsed} seconds!`);
+      setModalTitle("Congratulations!");
+      setModalContent(`You have sunk all the ships in ${timeElapsed} seconds!`);
       setTimerRunning(false);
     }
   }, [myShipsSunk]);

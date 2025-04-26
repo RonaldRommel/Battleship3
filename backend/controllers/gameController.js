@@ -269,11 +269,10 @@ exports.makeMove = async (req, res) => {
 
 exports.highscores = async (req, res) => {
   try {
-    // Fetch all completed games
+    // Step 1: Fetch all completed games
     const allGames = await Game.find({ status: "completed" });
 
-    // Create an object to store win/loss data for each player
-    const playerStats = {};
+    // Step 2: Create playerMap (playerID -> username)
     const playerMap = {};
     allGames.forEach((game) => {
       if (game.userID && !playerMap[game.userID]) {
@@ -283,41 +282,54 @@ exports.highscores = async (req, res) => {
         playerMap[game.opponentID] = game.opponent;
       }
     });
-    console.log("Player Map:", playerMap);
+
+    // Step 3: Initialize playerStats for all known players
+    const playerStats = {};
+    for (const playerId in playerMap) {
+      playerStats[playerId] = { wins: 0, losses: 0 };
+    }
+
+    // Step 4: Update wins and losses based on each completed game
     allGames.forEach((game) => {
-      const winner = game.winner;
-      const loser = winner === game.userID ? game.userID : game.opponentID;
-
-      if (!playerStats[winner]) {
-        playerStats[winner] = { wins: 0, losses: 0 };
+      const winner = game.winner.toString();
+      const loser =
+        winner === game.userID.toString()
+          ? game.opponentID.toString()
+          : game.userID.toString();
+      console.log("Game", game.id, "winner", winner, "loser", loser);
+      if (winner && playerStats[winner]) {
+        playerStats[winner].wins++;
       }
-      playerStats[winner].wins++;
 
-      if (!playerStats[loser]) {
-        playerStats[loser] = { wins: 0, losses: 0 };
+      if (loser && playerStats[loser]) {
+        playerStats[loser].losses++;
       }
-      playerStats[loser].losses++;
     });
+
+    // Step 5: Create a highscores array
     const players = Object.keys(playerStats).map((playerId) => ({
       id: playerId,
-      username: playerMap[playerId], // Assuming playerId is the username
+      username: playerMap[playerId] || "Unknown Player",
       wins: playerStats[playerId].wins,
       losses: playerStats[playerId].losses,
     }));
 
+    // Step 6: Sort players by wins desc, then losses asc, then username asc
     players.sort((a, b) => {
       if (b.wins !== a.wins) {
-        return b.wins - a.wins; // Sort by wins descending
+        return b.wins - a.wins; // More wins first
       } else if (a.losses !== b.losses) {
-        return a.losses - b.losses; // Sort by losses ascending
+        return a.losses - b.losses; // Fewer losses next
       } else {
-        return a.username.localeCompare(b.username); // Sort by username alphabetically
+        return a.username.localeCompare(b.username); // Alphabetical by username
       }
     });
 
+    // Step 7: Send the response
     res.status(200).json({
       message: "High scores fetched successfully",
       highscores: players,
+      playerMap: playerMap,
     });
   } catch (error) {
     console.error("ERROR:", error);

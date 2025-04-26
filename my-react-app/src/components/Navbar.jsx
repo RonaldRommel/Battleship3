@@ -2,10 +2,20 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import "../App.css";
 import { useAuthContext, AuthProvider } from "../context/AuthContext";
+import axios from "axios";
 
 const Navbar = () => {
   const { user, isAuthenticated, handleLogout } = useAuthContext();
-
+  const handleCreateGame = async () => {
+    try {
+      const newGame = await axios.post("/api/game/newgame", {
+        withCredentials: true,
+      });
+    } catch (error) {
+      console.error("Error creating game:", error);
+      alert("Error creating game. Please try again.");
+    }
+  };
   return (
     <nav className="navbar sticky-top navbar-expand-lg navbar-custom">
       <div className="container-fluid">
@@ -56,6 +66,15 @@ const Navbar = () => {
             )}
             {isAuthenticated && (
               <>
+                <li className="nav-item">
+                  <NavLink
+                    className="nav-link"
+                    to="/game"
+                    onClick={handleCreateGame}
+                  >
+                    Create Game
+                  </NavLink>
+                </li>
                 <li className="nav-item dropdown">
                   <a
                     className="nav-link dropdown-toggle"
