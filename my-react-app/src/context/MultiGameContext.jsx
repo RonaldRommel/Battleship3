@@ -127,6 +127,20 @@ const MultiGameProvider = ({ children }) => {
     }
   }, [timerRunning]);
 
+  const formatTimeElapsed = (seconds) => {
+    // Calculate hours, minutes, and seconds
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    const remainingSeconds = seconds % 60;
+
+    // Format the time as hh:mm:ss
+    const formattedTime = `${hours.toString().padStart(2, "0")}:${minutes
+      .toString()
+      .padStart(2, "0")}:${remainingSeconds.toString().padStart(2, "0")}`;
+
+    return formattedTime;
+  };
+
   // Player's board state (where player's ships are placed)
   const [myBoard, setMyBoard] = useState(
     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
@@ -234,6 +248,7 @@ const MultiGameProvider = ({ children }) => {
         setOpBoardUI(gameDetails.opponentBoardUI); //change this
         setMyShipsSunk(gameDetails.userShips);
         setOpShipsSunk(gameDetails.opponentShips);
+        console.log("Opponent ship", gameDetails.opponentBoard);
       } else {
         console.log(
           "User is opponent",
@@ -247,6 +262,7 @@ const MultiGameProvider = ({ children }) => {
         setOpBoardUI(gameDetails.userBoardUI); //change this
         setMyShipsSunk(gameDetails.opponentShips);
         setOpShipsSunk(gameDetails.userShips);
+        console.log("Opponent ship", gameDetails.userBoard);
       }
     }
   }, [isCreator]);
@@ -403,6 +419,7 @@ const MultiGameProvider = ({ children }) => {
         isCreator,
         turn,
         setTurn,
+        formatTimeElapsed,
       }}
     >
       {children}
