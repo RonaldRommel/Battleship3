@@ -3,18 +3,16 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
-import { useAuthContext } from "../context/AuthContext";
+import { useAuthContext, AuthProvider } from "../context/AuthContext";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
   });
-
   const [isValid, setIsValid] = useState(true); // To track overall form validity
   const navigate = useNavigate();
   const { handleLogin } = useAuthContext();
-  const API = import.meta.env.VITE_API_BASE_URL;
   // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -40,7 +38,7 @@ const Login = () => {
         console.log("Form Submitted", formData);
 
         // Make the login API request
-        const response = await axios.post(API+"/api/auth/login", formData, {
+        const response = await axios.post("/api/auth/login", formData, {
           withCredentials: true,
         });
 
@@ -130,4 +128,12 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default function LoginPage() {
+  return (
+    <>
+      <AuthProvider>
+        <Login />
+      </AuthProvider>
+    </>
+  );
+}

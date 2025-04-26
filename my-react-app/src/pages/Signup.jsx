@@ -9,12 +9,12 @@ const SignUp = () => {
     lastName: "",
     email: "",
     password: "",
+    confirmPassword: "",
   });
 
-  const [isValid, setIsValid] = useState(true); // To track overall form validity
+  const [isValid, setIsValid] = useState(true);
   const navigate = useNavigate();
 
-  // Handle form input changes
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prevData) => ({
@@ -23,35 +23,35 @@ const SignUp = () => {
     }));
   };
 
-  // Handle form submission
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if all required fields are filled in
     const form = e.target;
-    if (form.checkValidity() === false) {
+    if (
+      form.checkValidity() === false ||
+      formData.password !== formData.confirmPassword
+    ) {
       e.stopPropagation();
       setIsValid(false);
-    } else {
-      // Handle successful form submission
-      setIsValid(true);
-      console.log("Form data:", formData);
-      try {
-        await axios.post("/api/auth/signup", {
-          firstName: formData.firstName,
-          lastName: formData.lastName,
-          email: formData.email,
-          password: formData.password,
-        });
-      } catch (error) {
-        console.error("Error during signup:", error);
-        alert("Error during signup. Please try again.");
-        return;
-      }
-      navigate("/login"); // Redirect to homepage
+      return;
     }
 
-    // Mark form as touched
+    setIsValid(true);
+
+    try {
+      await axios.post("/api/auth/signup", {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      });
+    } catch (error) {
+      console.error("Error during signup:", error);
+      alert("Error during signup. Please try again.");
+      return;
+    }
+
+    navigate("/login");
     form.classList.add("was-validated");
   };
 
@@ -152,6 +152,28 @@ const SignUp = () => {
               <div className="invalid-feedback">
                 Minimum password length is 5 characters.
               </div>
+            </div>
+
+            <div className="col-md-12">
+              <label htmlFor="confirmPassword" className="form-label">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                className={`form-control ${
+                  !isValid &&
+                  formData.confirmPassword !== formData.password
+                    ? "is-invalid"
+                    : ""
+                }`}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleInputChange}
+                placeholder="Re-enter your password"
+                required
+              />
+              <div className="invalid-feedback">Passwords do not match.</div>
             </div>
 
             <div className="col-12">

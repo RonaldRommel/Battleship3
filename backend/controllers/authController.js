@@ -48,8 +48,8 @@ exports.login = async (req, res) => {
     const accessToken = generateAccessToken(user);
     res.cookie("accessToken", accessToken, {
       httpOnly: true,
-      secure: true,
-      sameSite: "None",
+      secure: false, // because you're on localhost
+      sameSite: "Lax", // <<< fix: use "Lax" for localhost dev
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
     res.status(200).json({
