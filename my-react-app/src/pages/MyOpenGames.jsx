@@ -17,6 +17,7 @@ function MyOpenGames() {
         const response = await myOpenGames();
 
         if (response.data && response.data.games) {
+          console.log("Open games:", response.data.games);
           setOpenGames(response.data.games);
         } else {
           setOpenGames([]);

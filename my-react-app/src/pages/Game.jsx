@@ -45,6 +45,16 @@ function Game() {
           >
             Normal
           </button>
+
+          <button
+            type="button"
+            className="list-group-item"
+            onClick={() => {
+              navigateToPage("multiplayer");
+            }}
+          >
+            Create Multiplayer Game
+          </button>
           <button
             type="button"
             className="list-group-item"

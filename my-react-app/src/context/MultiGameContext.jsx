@@ -9,6 +9,7 @@ import React, {
 import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useAuthContext } from "./AuthContext";
+
 // Define game constants
 const BOARD_SIZE = 10; // Size of the game board (10x10 grid)
 const SHIP_SIZES = [5, 4, 3, 3, 2]; // Sizes of ships to be placed (5 ships of different lengths)
@@ -158,7 +159,13 @@ const MultiGameProvider = ({ children }) => {
 
   // Function to start the game timer
   const startTimer = () => {
-    setTimerRunning(true);
+    const startTime = new Date(gameDetails.startTime);
+    const currentTime = new Date();
+    const diffInSeconds = Math.floor((currentTime - startTime) / 1000);
+    setTimeElapsed(diffInSeconds);
+    if (gameDetails.status === "active") {
+      setTimerRunning(true);
+    }
   };
   const { isAuthenticated, user } = useAuthContext();
 
@@ -167,7 +174,6 @@ const MultiGameProvider = ({ children }) => {
       gameDetails.userBoard = myBoard;
     } else {
       gameDetails.opponentBoard = myBoard;
-      gameDetails.startTime = new Date();
     }
     console.log("Game details to update:", gameDetails);
     try {
@@ -191,11 +197,18 @@ const MultiGameProvider = ({ children }) => {
             withCredentials: true,
           });
           setGameDetails(res.data.game);
+          console.log("Game details fetched:", res.data.game);
           setIsCreator(user.id === res.data.game.userID);
-          if (res.data.game.winner) {
-            setTurn(null);
+          const tempUser = user.id === res.data.game.userID;
+          if (tempUser && res.data.game.turn === "user") {
+            console.log("User is creator and it's their turn");
+            setTurn(true);
+          } else if (!tempUser && res.data.game.turn === "opponent") {
+            console.log("User is opponent and it's their turn");
+            setTurn(true);
           } else {
-            setTurn(res.data.game.turn === user.id);
+            console.log("User's turn is not active");
+            setTurn(false);
           }
         } catch (error) {
           console.error("Error fetching game details:", error);
@@ -216,9 +229,11 @@ const MultiGameProvider = ({ children }) => {
           gameDetails.user
         );
         setMyBoard(gameDetails.userBoard);
-        setMyBoardUI(gameDetails.userBoard); //change this
+        setMyBoardUI(gameDetails.userBoardUI); //change this
         setOpBoard(gameDetails.opponentBoard);
-        setOpBoardUI(gameDetails.opponentBoard); //change this
+        setOpBoardUI(gameDetails.opponentBoardUI); //change this
+        setMyShipsSunk(gameDetails.userShips);
+        setOpShipsSunk(gameDetails.opponentShips);
       } else {
         console.log(
           "User is opponent",
@@ -227,9 +242,11 @@ const MultiGameProvider = ({ children }) => {
           gameDetails.opponent
         );
         setMyBoard(gameDetails.opponentBoard);
-        setMyBoardUI(gameDetails.opponentBoard); //change this
+        setMyBoardUI(gameDetails.opponentBoardUI); //change this
         setOpBoard(gameDetails.userBoard);
-        setOpBoardUI(gameDetails.userBoard); //change this
+        setOpBoardUI(gameDetails.userBoardUI); //change this
+        setMyShipsSunk(gameDetails.opponentShips);
+        setOpShipsSunk(gameDetails.userShips);
       }
     }
   }, [isCreator]);
@@ -248,6 +265,7 @@ const MultiGameProvider = ({ children }) => {
     if (board[row][col] === 0) {
       // If empty cell, mark as miss (1)
       cellStates[row][col] = 1;
+      return 0;
     } else {
       // If ship cell, mark with the ship's size (2-5)
       if (board[row][col] === 2) {
@@ -261,48 +279,74 @@ const MultiGameProvider = ({ children }) => {
       }
       // Increment the ship cells hit counter
       shipCount((x) => x + 1);
+      return 1;
     }
   }
 
+  const playerMoveUpdateDB = async (cellStates, count) => {
+    if (isCreator) {
+      gameDetails.opponentBoardUI = cellStates;
+      gameDetails.opponentShips = gameDetails.opponentShips + count;
+    } else {
+      gameDetails.userBoardUI = cellStates;
+      gameDetails.userShips = gameDetails.userShips + count;
+    }
+    console.log("Player Move Updated", gameDetails);
+    try {
+      const res = await axios.put(
+        `/api/game/${gameId}/move`,
+        { game: gameDetails },
+        { withCredentials: true }
+      );
+      console.log("Game updated successfully:", res.data);
+    } catch (error) {
+      console.error("Error updating game:", error);
+    }
+  };
+
   // Function to handle player clicks on opponent's board (player's attacks)
   const handleOpBoardClick = (row, col) => {
-    // Create a copy of opponent's UI board
+    if (
+      gameDetails.status === "completed" ||
+      (user.id !== gameDetails.userID && user.id !== gameDetails.opponentID)
+    ) {
+      return;
+    }
     const newOPCellStates = [...opBoardUI];
-    // Process the player's attack
-    BoardOperation(row, col, opBoard, setOpShipsSunk, newOPCellStates);
-    // Update the opponent's UI board
+    const count = BoardOperation(
+      row,
+      col,
+      opBoard,
+      setOpShipsSunk,
+      newOPCellStates
+    );
     setOpBoardUI(newOPCellStates);
-
-    // After a short delay, let the AI make its move
-    setTimeout(() => {
-      // Create a copy of player's UI board
-      const newMyCellStates = [...myBoardUI];
-      // Only allow AI to move if game is not over
-      if (opShipsSunk !== 17 && myShipsSunk < shipToSink) {
-        // Get AI's move coordinates
-        const { row, col } = AIgame(myBoard);
-        // Process the AI's attack
-        BoardOperation(row, col, myBoard, setMyShipsSunk, newMyCellStates);
-        // Mark the cell as attacked (10) to prevent AI from targeting it again
-        myBoard[row][col] = 10;
-        // Update the player's board state
-        setMyBoard(myBoard);
-        // Update the player's UI board
-        setMyBoardUI(newMyCellStates);
-      }
-    }, 500); // 500ms delay before AI's move
+    playerMoveUpdateDB(newOPCellStates, count);
+    setTurn(false);
   };
 
   useEffect(() => {
-    if (opShipsSunk === shipToSink) {
+    if (opShipsSunk === shipToSink && isCreator) {
+      console.log("Opponent sunk all ships and Creator");
       setModalTitle("Congratulations!");
       setModalContent(`You have sunk all the ships in ${timeElapsed} seconds!`);
+      setTimerRunning(false);
+    } else if (opShipsSunk === shipToSink && !isCreator) {
+      console.log("Opponent sunk all ships and not Creator");
+      setModalTitle("Game Over!");
+      setModalContent(`You have lost the game in ${timeElapsed} seconds!`);
       setTimerRunning(false);
     }
   }, [opShipsSunk]);
 
   useEffect(() => {
-    if (myShipsSunk === shipToSink) {
+    if (myShipsSunk === shipToSink && isCreator) {
+      console.log("my sunk all ships and Creator");
+      setModalTitle("Congratulations!");
+      setModalContent(`You have sunk all the ships in ${timeElapsed} seconds!`);
+      setTimerRunning(false);
+    } else if (myShipsSunk === shipToSink && !isCreator) {
+      console.log("my sunk all ships and not Creator");
       setModalTitle("Game Over!");
       setModalContent(`You have lost the game in ${timeElapsed} seconds!`);
       setTimerRunning(false);
@@ -371,235 +415,3 @@ const useMultiGameContext = () => useContext(MultiGameContext);
 
 // Export both the provider component and the custom hook
 export { MultiGameProvider, useMultiGameContext };
-
-// import React, { createContext, useState, useContext, useEffect } from "react";
-
-// const BOARD_SIZE = 10; // Size of the board
-// const SHIP_SIZES = [5, 4, 3, 3, 2]; // Ship sizes
-// const shipToSink = 17;
-// const randomness = 0.7;
-
-// function AIgame(board) {
-//   let row = 0,
-//     col = 0;
-//   const pick = Math.random() < randomness ? [0] : [2, 3, 4, 5];
-//   while (true) {
-//     row = Math.floor(Math.random() * BOARD_SIZE);
-//     col = Math.floor(Math.random() * BOARD_SIZE);
-//     if (pick.includes(board[row][col])) {
-//       return { row: row, col: col };
-//     }
-//   }
-// }
-
-// function canPlaceShip(board, shipSize, x, y, direction) {
-//   if (direction === "H") {
-//     // Horizontal placement
-//     if (y + shipSize > BOARD_SIZE) return false;
-//     for (let i = 0; i < shipSize; i++) {
-//       if (board[x][y + i] !== 0) return false;
-//     }
-//   } else if (direction === "V") {
-//     // Vertical placement
-//     if (x + shipSize > BOARD_SIZE) return false;
-//     for (let i = 0; i < shipSize; i++) {
-//       if (board[x + i][y] !== 0) return false;
-//     }
-//   }
-//   return true;
-// }
-
-// // Function to place a ship on the board, 1 == ship, 0 == empty
-// function placeShip(board, shipSize) {
-//   let placed = false;
-//   while (!placed) {
-//     const direction = Math.random() < 0.5 ? "H" : "V";
-//     const x = Math.floor(Math.random() * BOARD_SIZE);
-//     const y = Math.floor(Math.random() * BOARD_SIZE);
-
-//     if (canPlaceShip(board, shipSize, x, y, direction)) {
-//       // Place the ship on the board
-//       if (direction === "H") {
-//         for (let i = 0; i < shipSize; i++) {
-//           board[x][y + i] = shipSize;
-//         }
-//       } else if (direction === "V") {
-//         for (let i = 0; i < shipSize; i++) {
-//           board[x + i][y] = shipSize;
-//         }
-//       }
-//       placed = true;
-//     }
-//   }
-// }
-
-// function randomShipPlacement(board, setBoard) {
-//   const newBoard = Array.from({ length: BOARD_SIZE }, () =>
-//     Array(BOARD_SIZE).fill(0)
-//   );
-//   SHIP_SIZES.forEach((shipSize) => {
-//     placeShip(newBoard, shipSize);
-//   });
-//   setBoard(newBoard);
-// }
-
-// const MultiGameContext = createContext();
-
-// const MultiGameProvider = ({ children }) => {
-//   const [timeElapsed, setTimeElapsed] = useState(0);
-//   const [timerRunning, setTimerRunning] = useState(false);
-//   const [myShipsSunk, setMyShipsSunk] = useState(0);
-//   const [opShipsSunk, setOpShipsSunk] = useState(0);
-
-//   useEffect(() => {
-//     if (timerRunning) {
-//       const timerInterval = setInterval(() => {
-//         setTimeElapsed((prevTime) => prevTime + 1);
-//       }, 1000);
-//       return () => clearInterval(timerInterval);
-//     }
-//   }, [timerRunning]);
-
-//   //My ship
-//   const [myBoard, setMyBoard] = useState(
-//     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
-//   );
-//   const [myBoardUI, setMyBoardUI] = useState(
-//     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
-//   );
-
-//   //Opponenet ships
-//   const [opBoard, setOpBoard] = useState(
-//     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
-//   );
-//   const [opBoardUI, setOpBoardUI] = useState(
-//     Array.from({ length: BOARD_SIZE }, () => Array(BOARD_SIZE).fill(0))
-//   );
-
-//   const [modalTitle, setModalTitle] = useState("");
-//   const [modalContent, setModalContent] = useState("");
-
-//   const [showModal, setShowModal] = useState(false);
-//   const closeModal = () => {
-//     setShowModal(false);
-//     setTimerRunning(false);
-//   };
-
-//   const startTimer = () => {
-//     setTimerRunning(true);
-//   };
-
-//   useEffect(() => {
-//     randomShipPlacement(opBoard, setOpBoard);
-//   }, []);
-
-//   useEffect(() => {
-//     console.log("OpBoard", opBoard);
-//   }, [opBoard]);
-
-//   const myShipRandom = () => {
-//     randomShipPlacement(myBoard, setMyBoard);
-//   };
-
-//   const handleMyBoardClick = (r, c) => {};
-
-//   function BoardOperation(row, col, board, shipCount, cellStates) {
-//     if (board[row][col] === 0) {
-//       cellStates[row][col] = 1;
-//     } else {
-//       if (board[row][col] === 2) {
-//         cellStates[row][col] = 2;
-//       } else if (board[row][col] === 3) {
-//         cellStates[row][col] = 3;
-//       } else if (board[row][col] === 4) {
-//         cellStates[row][col] = 4;
-//       } else if (board[row][col] === 5) {
-//         cellStates[row][col] = 5;
-//       }
-//       shipCount((x) => x + 1);
-//     }
-//   }
-
-//   const handleOpBoardClick = (row, col) => {
-//     const newOPCellStates = [...opBoardUI];
-//     BoardOperation(row, col, opBoard, setOpShipsSunk, newOPCellStates);
-//     setOpBoardUI(newOPCellStates);
-//     setTimeout(() => {
-//       const newMyCellStates = [...myBoardUI];
-//       if (opShipsSunk !== 17 && myShipsSunk < shipToSink) {
-//         const { row, col } = AIgame(myBoard);
-//         BoardOperation(row, col, myBoard, setMyShipsSunk, newMyCellStates);
-//         myBoard[row][col] = 10;
-//         setMyBoard(myBoard);
-//         setMyBoardUI(newMyCellStates);
-//       }
-//     }, 500);
-//   };
-
-//   useEffect(() => {
-//     if (opShipsSunk === shipToSink) {
-//       setModalTitle("Congratulations!");
-//       setModalContent(`You have sunk all the ships in ${timeElapsed} seconds!`);
-//       setTimerRunning(false);
-//     }
-//   }, [opShipsSunk]);
-
-//   useEffect(() => {
-//     if (myShipsSunk === shipToSink) {
-//       setModalTitle("Game Over!");
-//       setModalContent(`You have lost the game in ${timeElapsed} seconds!`);
-//       setTimerRunning(false);
-//     }
-//   }, [myShipsSunk]);
-
-//   const getButtonClass = (clicked) => {
-//     if (clicked === 0) {
-//       return ""; // Default or Ship cell
-//     } else if (clicked === 1) {
-//       return "btn-danger"; // Miss
-//     } else if (clicked === 2) {
-//       return "btn-success";
-//     } else if (clicked === 3) {
-//       return "btn-warning";
-//     } else if (clicked === 4) {
-//       return "btn-primary";
-//     } else if (clicked === 5) {
-//       return "btn-info";
-//     }
-//     return ""; // In case of any unexpected value
-//   };
-
-//   useEffect(() => {
-//     if (opShipsSunk === shipToSink || myShipsSunk === shipToSink) {
-//       setShowModal(true);
-//     }
-//   }, [modalTitle, modalContent]);
-
-//   return (
-//     <MultiGameContext.Provider
-//       value={{
-//         myBoard,
-//         handleMyBoardClick,
-//         timeElapsed,
-//         myShipRandom,
-//         myBoardUI,
-//         opBoardUI,
-//         handleOpBoardClick,
-//         myShipsSunk,
-//         opShipsSunk,
-//         showModal,
-//         closeModal,
-//         modalTitle,
-//         modalContent,
-//         startTimer,
-//         getButtonClass,
-//       }}
-//     >
-//       {children}
-//     </MultiGameContext.Provider>
-//   );
-// };
-
-// const useMultiGameContext = () => useContext(MultiGameContext);
-
-// export { MultiGameProvider, useMultiGameContext };

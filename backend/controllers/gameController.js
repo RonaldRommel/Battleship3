@@ -12,6 +12,8 @@ exports.openGames = async (req, res) => {
     const games = await Game.find({
       userID: { $ne: user.id },
       status: "open",
+    }).sort({
+      createdAt: -1,
     });
     res.status(200).json({
       message: "Open games retrieved successfully",
@@ -28,7 +30,10 @@ exports.openGames = async (req, res) => {
 exports.myOpenGames = async (req, res) => {
   const user = req.user;
   try {
-    const games = await Game.find({ userID: user.id, status: "open" });
+    // const games = await Game.find({ userID: user.id, status: "open" });
+    const games = await Game.find({ userID: user.id, status: "open" }).sort({
+      createdAt: -1,
+    });
     res.status(200).json({
       message: "Open games retrieved successfully",
       games,
@@ -47,6 +52,8 @@ exports.myActiveGames = async (req, res) => {
     const allGames = await Game.find({
       status: "active",
       $or: [{ userID: user.id }, { opponentID: user.id }],
+    }).sort({
+      startTime: -1,
     });
     res.status(200).json({
       message: "Active games retrieved successfully",
@@ -66,6 +73,8 @@ exports.myCompletedGames = async (req, res) => {
     const games = await Game.find({
       status: "completed",
       $or: [{ userID: user.id }, { opponentID: user.id }],
+    }).sort({
+      startTime: -1,
     });
     res.status(200).json({
       message: "Completed games retrieved successfully",
@@ -118,7 +127,8 @@ exports.joinGame = async (req, res) => {
       game.opponent = user.firstName + " " + user.lastName;
       game.opponentID = user.id;
       game.status = "active";
-      console.log(game);
+      game.startTime = new Date();
+      console.log("GAME", game);
       try {
         await game.save();
         return res.status(200).json({
@@ -138,7 +148,7 @@ exports.joinGame = async (req, res) => {
     }
   } catch (error) {
     return res.status(500).json({
-      message: "Server error",
+      message: "Server error WEEWWEWWW",
       error,
     });
   }
@@ -179,13 +189,30 @@ exports.makeMove = async (req, res) => {
       message: "You are not authorized to make this move",
     });
   }
+  if (updatedGame.status === "completed") {
+    return res.status(403).json({
+      message: "Game is already complete",
+    });
+  }
   delete updatedGame._id;
   console.log("_____BEFORE____UPDATED GAME_____", updatedGame);
   try {
-    updatedGame.turn =
-      updatedGame.turn === user.id
-        ? updatedGame.opponentID
-        : updatedGame.userID; // Switching turns
+    updatedGame.turn = user.id === updatedGame.userID ? "opponent" : "user";
+    if (updatedGame.status === "active") {
+      if (updatedGame.userShips === 17) {
+        updatedGame.status = "completed";
+        updatedGame.winner = updatedGame.userID;
+        updatedGame.duration = Math.floor(
+          (new Date() - new Date(updatedGame.startTime)) / 1000
+        );
+      } else if (updatedGame.opponentShips === 17) {
+        updatedGame.status = "completed";
+        updatedGame.winner = updatedGame.opponentID;
+        updatedGame.duration = Math.floor(
+          (new Date() - new Date(updatedGame.startTime)) / 1000
+        );
+      }
+    }
     console.log("_____UPDATED GAME_____", updatedGame);
     await Game.updateOne({ _id: gameId }, updatedGame);
     res.status(200).json({
@@ -202,11 +229,61 @@ exports.makeMove = async (req, res) => {
 
 exports.highscores = async (req, res) => {
   try {
+    // Fetch all completed games
     const allGames = await Game.find({ status: "completed" });
+
+    // Create an object to store win/loss data for each player
+    const playerStats = {};
+    const playerMap = {};
+    allGames.forEach((game) => {
+      if (game.userID && !playerMap[game.userID]) {
+        playerMap[game.userID] = game.user;
+      }
+      if (game.opponentID && !playerMap[game.opponentID]) {
+        playerMap[game.opponentID] = game.opponent;
+      }
+    });
+    console.log("Player Map:", playerMap);
+    allGames.forEach((game) => {
+      const winner = game.winner;
+      const loser = winner === game.userID ? game.userID : game.opponentID;
+
+      if (!playerStats[winner]) {
+        playerStats[winner] = { wins: 0, losses: 0 };
+      }
+      playerStats[winner].wins++;
+
+      if (!playerStats[loser]) {
+        playerStats[loser] = { wins: 0, losses: 0 };
+      }
+      playerStats[loser].losses++;
+    });
+    const players = Object.keys(playerStats).map((playerId) => ({
+      id: playerId,
+      username: playerMap[playerId], // Assuming playerId is the username
+      wins: playerStats[playerId].wins,
+      losses: playerStats[playerId].losses,
+    }));
+
+    players.sort((a, b) => {
+      if (b.wins !== a.wins) {
+        return b.wins - a.wins; // Sort by wins descending
+      } else if (a.losses !== b.losses) {
+        return a.losses - b.losses; // Sort by losses ascending
+      } else {
+        return a.username.localeCompare(b.username); // Sort by username alphabetically
+      }
+    });
+
+    res.status(200).json({
+      message: "High scores fetched successfully",
+      highscores: players,
+    });
   } catch (error) {
-    return res.status(500).json({
+    console.error("ERROR:", error);
+    res.status(500).json({
       message: "Server error",
-      error,
+      error: error.message,
     });
   }
 };

@@ -10,7 +10,6 @@ import {
 import Board from "../components/Board";
 import Modal from "../components/Modal";
 import Timer from "../components/Timer";
-import RefreshButton from "../components/RefreshBtn";
 import "../index.css";
 import { useParams } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
@@ -47,7 +46,6 @@ function Multiplayer() {
       updateBoardInDB();
       setTurn(false);
       setShipModal(false);
-      startTimer();
     }
   };
   const { gameID } = useParams();
@@ -70,14 +68,18 @@ function Multiplayer() {
 
   useEffect(() => {
     if (gameDetails !== null && gameDetails) {
+      if (
+        shipsArePlaced(gameDetails.userBoard) &&
+        shipsArePlaced(gameDetails.opponentBoard)
+      ) {
+        startTimer();
+      }
       if (isCreator && shipsArePlaced(gameDetails.userBoard)) {
         console.log("Checking if ships are placed...userBoard");
         setShipModal(false);
-        startTimer();
       } else if (!isCreator && shipsArePlaced(gameDetails.opponentBoard)) {
         console.log("Checking if ships are placed... opponentBoard");
         setShipModal(false);
-        startTimer();
       } else {
         setShipModal(true);
       }
@@ -103,14 +105,14 @@ function Multiplayer() {
             <div className="board-wrapper">
               <div>
                 <h2 className="small-title">
-                  {isCreator ? gameDetails.user : gameDetails.opponent}
+                  {!isCreator ? gameDetails.user : gameDetails.opponent}'s Board
                 </h2>
                 <Board
                   cellStates={opBoardUI}
                   handleCellClick={handleOpBoardClick}
                   getButtonClass={getButtonClass}
                 />
-                <h2 className="small-title">My Board</h2>
+                <h2 className="small-title">Your Board</h2>
                 <Board
                   cellStates={myBoardUI}
                   handleCellClick={handleMyBoardClick}
@@ -168,33 +170,36 @@ function Multiplayer() {
           </div>
         </>
       )}
-      {!buildShipModal && turn === false && gameDetails && (
-        <div
-          className="modal fade show"
-          id="waitingForTurnModal"
-          tabIndex="-1"
-          aria-labelledby="waitingForTurnLabel"
-          aria-hidden="true"
-          style={{ display: "block" }}
-        >
-          <div className="modal-dialog modal-dialog-centered">
-            <div className="modal-content text-center">
-              <div className="modal-body">
-                <div className="spinner-border text-primary" role="status">
-                  <span className="visually-hidden">Loading...</span>
+      {!buildShipModal &&
+        turn === false &&
+        gameDetails &&
+        gameDetails.winner === null && (
+          <div
+            className="modal fade show"
+            id="waitingForTurnModal"
+            tabIndex="-1"
+            aria-labelledby="waitingForTurnLabel"
+            aria-hidden="true"
+            style={{ display: "block" }}
+          >
+            <div className="modal-dialog modal-dialog-centered">
+              <div className="modal-content text-center">
+                <div className="modal-body">
+                  <div className="spinner-border text-primary" role="status">
+                    <span className="visually-hidden">Loading...</span>
+                  </div>
+                  <h3 className="mt-3">Waiting for opponent's turn...</h3>
+                  <button
+                    className="btn btn-secondary mt-3"
+                    onClick={handleGoBack}
+                  >
+                    ← Go Back
+                  </button>
                 </div>
-                <h3 className="mt-3">Waiting for opponent's turn...</h3>
-                <button
-                  className="btn btn-secondary mt-3"
-                  onClick={handleGoBack}
-                >
-                  ← Go Back
-                </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
       {!gameDetails && (
         <div
           className="container d-flex flex-column align-items-center justify-content-center"
