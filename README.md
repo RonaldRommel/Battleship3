@@ -1,119 +1,123 @@
-README - Battleship 3
-=====================
+📌 Overview:
+Battleship 3 is a complete fullstack implementation of the classic Battleship game where users can register, log in, and compete with others online in turn-based matches. The app uses RESTful APIs with secure session handling, MongoDB for persistence, and React for an interactive UI.
 
-🎮 Project: Battleship 3 — Fullstack Multiplayer Battleship Game
+The game supports multiplayer functionality, detailed score tracking, categorized game listings, and is structured to scale while remaining simple and intuitive.
 
-📚 Overview:
-Battleship 3 is a full-stack web application that lets users play the classic game of Battleship online with others. It includes full account management, persistent game state tracking, and an interactive UI for gameplay. The game is built using the MERN stack (MongoDB, Express, React, Node.js) with RESTful APIs and cookie-based authentication.
-
-⚙️ Tech Stack:
-- Frontend: React, CSS, JavaScript
+🧰 Tech Stack:
+- Frontend: React, Vite, Tailwind CSS (or your styling lib)
 - Backend: Node.js, Express.js
-- Database: MongoDB with Mongoose
-- Auth: HTTP-only cookies
-- Hosting: Render / Any static + dynamic host
+- Database: MongoDB + Mongoose
+- Authentication: HTTP-only cookies + bcrypt hashing
+- Deployment: Render (or similar)
 
-✅ Features:
-- Register/Login with password confirmation
-- Create new games and wait for opponents
-- Join open games from a global pool
-- Play turn-based Battleship with auto-randomized boards
-- All Games page: categorized into Open, Active, Completed, and Others
-- High Scores page sorted by win/loss ratio
-- Secure API access based on user session
-- Conditional UI based on login state (NavBar + Page Behavior)
-- Game history and stats per user
+📂 Project Structure:  
+.  
+├── README.md               → Project overview (you’re reading it!)  
+├── Writeup/                → Final submission writeup files  
+├── backend/                → Express.js backend (API + DB logic)  
+│   ├── controllers/        → Logic for auth and game routes  
+│   ├── middleware/         → Token verification and other middleware  
+│   ├── models/             → Mongoose schemas (User, Game)  
+│   ├── routes/             → API endpoints (authRoutes.js, gameRoutes.js)  
+│   ├── server.js           → Entry point for backend server  
+│   ├── package.json        → Backend dependencies  
+│   └── package-lock.json  
+└── my-react-app/           → React + Vite frontend  
+    ├── public/             → Static assets and favicon  
+    ├── src/                → React components, pages, and routes  
+    │   ├── components/     → UI components (Navbar, Board, etc.)  
+    │   ├── pages/          → Page-level components (Login, GamePage, etc.)  
+    │   ├── routes.jsx      → All frontend route definitions  
+    │   └── App.jsx         → Root component  
+    ├── index.html          → HTML template  
+    ├── vite.config.js      → Vite configuration  
+    ├── package.json        → Frontend dependencies  
+    ├── package-lock.json  
+    ├── eslint.config.js    → Linter config (if used)  
+    └── README.md           → Frontend-specific instructions (optional)  
 
-🧠 Bonus (Optional) Implementations:
-- Password encryption (bcrypt)
-- AI opponents (back-end logic only)
-- Manual ship placement via drag and drop
-- Early submission bonus
-- Clean modular code with helper functions and proper RESTful endpoints
+🔐 Auth API Routes:
+- `POST /api/auth/signup` → Register user
+- `POST /api/auth/login` → Login and set secure cookie
+- `POST /api/auth/logout` → Clear session
+- `GET /api/auth/user` → Get current user info (protected)
 
-🛠️ Setup Instructions: [COPY]
+🎮 Game API Routes:
+- `GET /api/game/open` → View open games by others
+- `GET /api/game/myopen` → Games you've created (awaiting players)
+- `GET /api/game/myactive` → Your ongoing games
+- `GET /api/game/mycompleted` → Your completed games
+- `GET /api/game/othergame` → Active/completed games you're not part of
+- `POST /api/game/newgame` → Create a new game
+- `GET /api/game/:gameID` → Join a specific game
+- `POST /api/game/joingame/:gameID` → Join an open game
+- `PUT /api/game/:gameID/move` → Make a move (attack)
+- `GET /api/game/highscores` → Leaderboard stats
+- `PUT /api/game/reset` → (Admin) Reset all games for testing
+
+🖥️ Frontend Routes:
+/ → Landing page
+/login → Login
+/signup → Register
+/scores → High score leaderboard
+/rules → Game rules
+/game → General game board
+/game/freeplay → Optional freeplay mode
+/game/normal → Optional normal mode
+/game/multiplayer/:id → Play multiplayer game
+/game/open-games → Join open games
+/game/my-open-games → See your open games
+/game/my-active-games → See your active games
+/game/my-completed-games → See your completed games
+/game/other-games → View other people's games
+
+🚀 Setup Instructions: [COPY]
 -----------------------------
 1. Clone the repository:
-   git clone https://github.com/yourusername/battleship3.git
+   git clone https://github.com/RonaldRommel/Battleship3.git
 
-2. Navigate to the project folder:
-   cd battleship3
+2. Backend setup:
+   cd battleship3/backend
+   npm install
+   Create `.env` file with:
+   - MONGO_URI=your_mongodb_connection_string
+   - JWT_SECRET=your_secret_key
+   - PORT=5000
 
-3. Install backend and frontend dependencies:
-   cd server && npm install
-   cd ../client && npm install
-
-4. Create a `.env` file in the server directory:
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_secret_key
-   PORT=5000
-
-5. Run the backend:
-   cd server
+   Run server:
    npm start
 
-6. Run the frontend in a separate terminal:
-   cd client
-   npm start
+3. Frontend setup:
+   cd ../my-react-app
+   npm install
+   npm run dev
 
-7. Access the app at:
+4. Visit app at:
    http://localhost:3000
 
-🌐 Deployed App:
-- Live URL: [your_render_or_vercel_link]
-- GitHub: https://github.com/yourusername/battleship3
+🛡️ Security:
+- Passwords hashed with bcrypt
+- JWT-based auth, stored in HTTP-only cookies
+- Middleware checks for protected routes
+- Users can only interact with their own game data
 
-📂 Folder Structure:
-- /client              → React frontend
-  - /components        → React UI components
-  - /pages             → Route pages (Login, Register, GamePage, Scores, etc.)
-  - /services          → Axios calls and helper methods
-- /server              → Express backend
-  - /models            → Mongoose models (User, Game, etc.)
-  - /routes            → RESTful API routes
-  - /middleware        → Auth middlewares
-  - /controllers       → Logic handlers
+🏆 Scoreboard:
+- `/scores` route shows all users sorted by:
+  - Wins (desc), Losses (asc), Username (A-Z)
+- Current logged-in user is visually highlighted
 
-📜 Core Pages:
-- `/`                  → Landing page
-- `/login`, `/register`→ Auth pages
-- `/games`             → View and manage all game types
-- `/game/:game_id`     → Gameplay view
-- `/high-scores`       → Leaderboard
-- `Navbar`             → Conditional UI based on login state
+📌 Completed Features:
+✔ RESTful API with MongoDB/Mongoose
+✔ Secure login/logout and cookie sessions
+✔ Categorized game listings
+✔ Random board setup and move logic
+✔ UI changes based on auth state
+✔ High score system
+✔ Deployment-ready structure
 
-🧪 API Design:
-- `POST /api/auth/register`       → Register a user
-- `POST /api/auth/login`          → Log in user and set cookie
-- `POST /api/auth/logout`         → Log out and clear session
-- `POST /api/games`               → Create new game
-- `PUT /api/games/:id/join`       → Join a game
-- `PUT /api/games/:id/play`       → Play a move
-- `GET /api/games`                → Fetch game listings
-- `GET /api/scores`               → Fetch leaderboard
-
-🔐 Security:
-- User authentication using cookies
-- Passwords encrypted using bcrypt
-- Backend authorization middleware for protected routes
-- Game actions restricted to valid players only
-
-📝 Writeup Guidelines:
-Include answers to:
-- Challenges you faced building the app
-- Features you’d add with more time
-- Assumptions made
-- Time spent
-- Names of collaborators (if any)
-
-🎥 Submission Requirements:
-- GitHub repo with correct naming format
-- Deployed live version
-- Walkthrough video showing:
-  - Login/Register
-  - Creating/joining games
-  - Viewing scoreboards
-  - Playing a full game
-  - Logged-out behavior
-
------------------------------
+💡 Future Enhancements:
+- WebSocket-based real-time updates
+- Manual drag-and-drop ship placement
+- In-game chat
+- AI player integration
+- UI polish + animations
